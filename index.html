@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14302A">
+<title>Mis gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#EEF2F0; --surface:#FFFFFF; --ink:#14302A; --muted:#5D6F69; --line:#D3DCD8;
+  --accent:#1E7A55; --accent-ink:#FFFFFF; --accent-soft:#DCEFE6;
+  --danger:#B4382A; --danger-soft:#F7E1DD;
+  --r:14px;
+  font-family:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1A17; --surface:#16231F; --ink:#E4EEEA; --muted:#93A6A0; --line:#2B3C37;
+    --accent:#4DBA8A; --accent-ink:#0F1A17; --accent-soft:#1C3A2F;
+    --danger:#E8796A; --danger-soft:#3A201C;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg); color:var(--ink); font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased}
+[hidden]{display:none !important}
+button,input,select,textarea{font:inherit; color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+/* ---------- estructura ---------- */
+main{padding:calc(20px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom)); max-width:1080px; margin:0 auto}
+.tabs{position:fixed; left:0; right:0; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); z-index:10}
+.tabs button{flex:1; background:none; border:0; padding:9px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:12px; color:var(--muted)}
+.tabs button i{font-size:22px}
+.tabs button.on{color:var(--accent)}
+.tabs .brand,.tabs .salir-txt{display:none}
+@media (min-width:900px){
+  .tabs{top:0; right:auto; width:220px; flex-direction:column; border-top:0; border-right:1px solid var(--line); padding:28px 14px}
+  .tabs .brand{display:block; font-size:20px; font-weight:600; padding:0 12px 24px; letter-spacing:-.01em}
+  .tabs button{flex:none; flex-direction:row; gap:12px; font-size:15px; padding:10px 12px; border-radius:10px}
+  .tabs button.on{background:var(--accent-soft)}
+  .tabs .salir{margin-top:auto}
+  main{margin-left:220px; padding:40px 40px 60px}
+}
+h1{font-size:26px; font-weight:600; letter-spacing:-.015em; margin:0 0 20px}
+h2{font-size:15px; font-weight:600; margin:28px 0 8px}
+.narrow{max-width:520px}
+
+/* ---------- controles ---------- */
+label.f{display:block; font-size:13px; color:var(--muted); margin:0 0 6px}
+.field{margin-bottom:16px}
+input[type=text],input[type=email],input[type=password],input[type=date],input[type=month],input[type=number],select,textarea{
+  width:100%; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 12px; min-height:46px}
+textarea{min-height:76px; resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border-radius:10px; padding:12px 18px; border:1px solid var(--line); background:var(--surface); font-weight:500; min-height:46px}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.danger{color:var(--danger); border-color:transparent; background:none}
+.btn.block{width:100%}
+.btn:disabled{opacity:.6}
+.row-btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chips label{position:relative; border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:8px 14px; font-size:14px; cursor:pointer}
+.chips input{position:absolute; opacity:0; pointer-events:none}
+.chips label:has(input:checked){background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+.chips label:has(input:focus-visible){outline:2px solid var(--accent); outline-offset:2px}
+.chip-btn{border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:6px 12px; font-size:14px}
+.chip-btn.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+.switch{display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px; cursor:pointer}
+.switch input{appearance:none; width:42px; height:24px; border-radius:12px; background:var(--line); position:relative; transition:background .15s; flex:none; cursor:pointer}
+.switch input::after{content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .15s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{transform:translateX(18px)}
+.ico{width:38px; height:38px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:20px; flex:none}
+.err{color:var(--danger); font-size:14px; margin:8px 0 0}
+
+/* ---------- inicio: talones de vencimiento ---------- */
+.mes-titulo{font-size:44px; font-weight:600; letter-spacing:-.03em; line-height:1; margin:4px 0 6px}
+.resumen{color:var(--muted); margin:0 0 8px}
+.resumen b{color:var(--ink); font-weight:600}
+.inicio-grid{display:grid; gap:8px}
+@media (min-width:1100px){ .inicio-grid{grid-template-columns:1.25fr 1fr; gap:40px; align-items:start} }
+.lista{display:flex; flex-direction:column; gap:8px}
+.vto{display:flex; align-items:stretch; width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:0; overflow:hidden}
+.vto:hover{border-color:var(--accent)}
+.stub{width:62px; flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:2px dashed var(--line); padding:10px 0}
+.stub b{font-size:24px; font-weight:600; line-height:1}
+.stub small{font-size:12px; color:var(--muted); margin-top:3px}
+.vto.late .stub{background:var(--danger-soft)}
+.vto.late .stub b,.vto.late .stub small{color:var(--danger)}
+.vto-body{flex:1; display:flex; align-items:center; gap:12px; padding:12px 14px; min-width:0}
+.vto-txt{flex:1; min-width:0}
+.vto-txt strong{display:block; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.vto-txt span{font-size:13px; color:var(--muted)}
+.vto.late .vto-txt span{color:var(--danger)}
+.vto-imp{font-weight:500; white-space:nowrap}
+.vacio{background:var(--surface); border:1px dashed var(--line); border-radius:var(--r); padding:20px; color:var(--muted)}
+.vacio p{margin:0 0 12px}
+
+/* ---------- movimientos ---------- */
+.mov{display:grid; grid-template-columns:38px 1fr auto; gap:12px; align-items:center; width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--line); padding:12px 2px}
+.mov:hover{background:var(--surface)}
+.mov .t strong{display:block; font-weight:500}
+.mov .t span{font-size:13px; color:var(--muted); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.mov .imp{font-weight:500; white-space:nowrap}
+.totales{display:flex; align-items:baseline; justify-content:space-between; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; margin:20px 0 4px}
+.totales strong{font-size:26px; font-weight:600; letter-spacing:-.02em}
+.sub{display:flex; justify-content:space-between; gap:12px; padding:8px 2px; border-bottom:1px solid var(--line); font-size:15px}
+.filtros{display:grid; gap:12px; grid-template-columns:1fr}
+@media (min-width:700px){ .filtros{grid-template-columns:repeat(3, minmax(0,1fr)); align-items:end} }
+
+/* ---------- categorías ---------- */
+.iconos{display:grid; grid-template-columns:repeat(auto-fill, minmax(44px,1fr)); gap:6px}
+.iconos button{height:44px; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-size:20px}
+.iconos button.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
+.fija-campos{border-left:3px solid var(--accent); padding-left:14px; margin:4px 0 16px}
+.dos{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.cat-row.off{opacity:.55}
+
+/* ---------- login ---------- */
+.auth{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px}
+.auth-box{width:100%; max-width:380px}
+.auth-box .mes-titulo{font-size:40px; margin-bottom:6px}
+.auth-box p.muted{margin:0 0 28px}
+.link{background:none; border:0; color:var(--accent); padding:0; font-weight:500; text-decoration:underline}
+
+.toast{position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:11px 18px; border-radius:10px; font-size:15px; z-index:50; max-width:calc(100% - 32px)}
+@media (min-width:900px){ .toast{bottom:28px; left:calc(50% + 110px)} }
+@media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+
+<!-- =================== LOGIN =================== -->
+<section id="auth" class="auth" hidden>
+  <form class="auth-box" id="auth-form" novalidate>
+    <div class="mes-titulo">Mis gastos</div>
+    <p class="muted" id="auth-sub">Entrá con tu cuenta.</p>
+    <div class="field"><label class="f" for="a-email">Mail</label><input type="email" id="a-email" autocomplete="email" placeholder="nombre@gmail.com"></div>
+    <div class="field"><label class="f" for="a-pass">Contraseña</label><input type="password" id="a-pass" autocomplete="current-password" placeholder="Mínimo 6 caracteres"></div>
+    <button class="btn primary block" id="a-btn">Entrar</button>
+    <p class="err" id="a-err" hidden></p>
+    <p class="muted" style="margin-top:20px"><span id="a-alt-txt">¿No tenés cuenta?</span> <button type="button" class="link" id="a-alt">Crear cuenta</button></p>
+  </form>
+</section>
+
+<!-- =================== APP =================== -->
+<div id="app" hidden>
+  <nav class="tabs" aria-label="Secciones">
+    <span class="brand">Mis gastos</span>
+    <button data-view="inicio" class="on"><i class="ti ti-calendar-due" aria-hidden="true"></i>Vencimientos</button>
+    <button data-view="cargar"><i class="ti ti-circle-plus" aria-hidden="true"></i>Cargar</button>
+    <button data-view="consultas"><i class="ti ti-list-search" aria-hidden="true"></i>Consultas</button>
+    <button data-view="categorias"><i class="ti ti-category" aria-hidden="true"></i>Categorías</button>
+    <button class="salir" id="btn-salir"><i class="ti ti-logout" aria-hidden="true"></i><span class="salir-txt">Salir</span></button>
+  </nav>
+
+  <main>
+    <!-- ---------- INICIO ---------- -->
+    <section class="view" id="v-inicio">
+      <div class="inicio-grid">
+        <div>
+          <div class="muted" id="i-anio"></div>
+          <div class="mes-titulo" id="i-mes"></div>
+          <p class="resumen" id="i-resumen"></p>
+          <div id="i-vtos"></div>
+        </div>
+        <div>
+          <h2>Últimos gastos</h2>
+          <div id="i-recientes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- CARGAR ---------- -->
+    <section class="view narrow" id="v-cargar" hidden>
+      <h1 id="g-titulo">Cargar gasto</h1>
+      <form id="g-form" novalidate>
+        <div class="field">
+          <label class="f" for="g-cat">Categoría</label>
+          <div style="display:flex; gap:10px; align-items:center">
+            <span class="ico" id="g-ico"><i class="ti ti-tag" aria-hidden="true"></i></span>
+            <select id="g-cat"></select>
+          </div>
+        </div>
+        <div class="field" id="g-per-wrap" hidden>
+          <label class="f" for="g-per">Paga el vencimiento de</label>
+          <select id="g-per"></select>
+          <input type="month" id="g-per-otro" style="margin-top:8px" hidden>
+        </div>
+        <div class="dos">
+          <div class="field"><label class="f" for="g-imp">Importe</label><input type="text" inputmode="decimal" id="g-imp" class="num" placeholder="0"></div>
+          <div class="field"><label class="f" for="g-fecha">Fecha</label><input type="date" id="g-fecha"></div>
+        </div>
+        <div class="field">
+          <span class="f" style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px">Medio de pago</span>
+          <div class="chips" id="g-medios"></div>
+        </div>
+        <div class="field"><label class="f" for="g-obs">Observación</label><textarea id="g-obs" placeholder="Opcional"></textarea></div>
+        <p class="err" id="g-err" hidden></p>
+        <div class="row-btns">
+          <button class="btn primary" id="g-ok" style="flex:1">Guardar gasto</button>
+          <button type="button" class="btn" id="g-cancel" hidden>Cancelar</button>
+        </div>
+        <button type="button" class="btn danger" id="g-del" hidden style="margin-top:12px"><i class="ti ti-trash" aria-hidden="true"></i>Eliminar gasto</button>
+      </form>
+    </section>
+
+    <!-- ---------- CONSULTAS ---------- -->
+    <section class="view" id="v-consultas" hidden>
+      <h1>Consultas</h1>
+      <div class="chips" style="margin-bottom:14px">
+        <label><input type="radio" name="c-modo" value="mes" checked>Por mes</label>
+        <label><input type="radio" name="c-modo" value="rango">Entre fechas</label>
+      </div>
+      <div class="filtros">
+        <div id="c-mes-wrap"><label class="f" for="c-mes">Mes</label><input type="month" id="c-mes"></div>
+        <div id="c-desde-wrap" hidden><label class="f" for="c-desde">Desde</label><input type="date" id="c-desde"></div>
+        <div id="c-hasta-wrap" hidden><label class="f" for="c-hasta">Hasta</label><input type="date" id="c-hasta"></div>
+        <div><label class="f" for="c-cat">Categoría</label><select id="c-cat"></select></div>
+      </div>
+      <p class="err" id="c-err" hidden></p>
+      <div id="c-res"></div>
+    </section>
+
+    <!-- ---------- CATEGORÍAS ---------- -->
+    <section class="view narrow" id="v-categorias" hidden>
+      <div id="k-lista-wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px">
+          <h1 style="margin:0">Categorías</h1>
+          <button class="btn primary" id="k-nueva"><i class="ti ti-plus" aria-hidden="true"></i>Nueva</button>
+        </div>
+        <div id="k-lista"></div>
+      </div>
+
+      <form id="k-form" hidden novalidate>
+        <h1 id="k-titulo">Nueva categoría</h1>
+        <div class="field"><label class="f" for="k-nombre">Nombre</label><input type="text" id="k-nombre" placeholder="Luz, Supermercado, Expensas…"></div>
+        <div class="field"><span class="f" style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px">Ícono</span><div class="iconos" id="k-iconos"></div></div>
+        <div class="field"><label class="switch">Tiene vencimiento (gasto fijo)<input type="checkbox" id="k-fija"></label></div>
+        <div class="fija-campos" id="k-fija-campos" hidden>
+          <div class="field">
+            <label class="f" for="k-cada">Se repite cada (meses)</label>
+            <div class="chips" id="k-cada-chips" style="margin-bottom:8px"></div>
+            <input type="number" id="k-cada" min="1" max="24" value="1" class="num">
+          </div>
+          <div class="dos">
+            <div class="field" id="k-mes-wrap"><label class="f" for="k-mes">Primer mes</label><select id="k-mes"></select></div>
+            <div class="field"><label class="f" for="k-dia">Día de vencimiento</label><input type="number" id="k-dia" min="1" max="31" class="num" placeholder="10"></div>
+          </div>
+          <div class="dos">
+            <div class="field"><label class="f" for="k-est">Importe estimado</label><input type="text" inputmode="decimal" id="k-est" class="num" placeholder="0"></div>
+            <div class="field"><label class="f" for="k-desde">Contar desde</label><input type="date" id="k-desde"></div>
+          </div>
+        </div>
+        <div class="field" id="k-activa-wrap" hidden><label class="switch">Activa<input type="checkbox" id="k-activa"></label></div>
+        <p class="err" id="k-err" hidden></p>
+        <div class="row-btns">
+          <button class="btn primary" id="k-ok" style="flex:1">Guardar categoría</button>
+          <button type="button" class="btn" id="k-cancel">Cancelar</button>
+        </div>
+        <button type="button" class="btn danger" id="k-del" hidden style="margin-top:12px"><i class="ti ti-trash" aria-hidden="true"></i>Eliminar categoría</button>
+      </form>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+/* ================= CONFIGURACIÓN ================= */
+const SUPABASE_URL = 'https://lnasfgksarasubuwhhqb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_eeWDal5BWk7XgR05ha7rHA_DfpUnn66';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ================= UTILIDADES ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MEDIOS = {efectivo:'Efectivo', debito:'Débito', tarjeta:'Tarjeta', transferencia:'Transferencia', otro:'Otro'};
+const ICONOS = ['bolt','flame','droplet','wifi','phone','device-mobile','device-tv','home','building','building-bank',
+  'car','gas-station','bus','plane','shopping-cart','basket','tools-kitchen-2','coffee','beer','pill','stethoscope',
+  'shield-check','school','book','shirt','scissors','barbell','paw','baby-carriage','gift','movie','music',
+  'credit-card','receipt','receipt-tax','cash','tool','tag'];
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hoy = () => ymd(new Date());
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const toDate = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const fmtFecha = s => { const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; };
+const fmtPer = s => { const [y,m] = s.split('-'); return `${cap(MESES[m-1])} ${y}`; };
+const pesos = new Intl.NumberFormat('es-AR', {style:'currency', currency:'ARS', minimumFractionDigits:0, maximumFractionDigits:2});
+const fmt = n => pesos.format(Number(n) || 0);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const diffDias = s => { const t = new Date(); t.setHours(0,0,0,0); return Math.round((toDate(s) - t) / 864e5); };
+const ultimoDia = (y, m) => new Date(y, m, 0).getDate();
+
+function parseImporte(str){
+  let s = String(str).trim().replace(/[$\s]/g, '');
+  if (!s) return NaN;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+  return Number(s);
+}
+const importeTxt = n => Number(n).toLocaleString('es-AR', {maximumFractionDigits:2});
+
+let toastT;
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2800);
+}
+function showErr(sel, msg){ const e = $(sel); e.textContent = msg; e.hidden = !msg; }
+
+function traducirError(e){
+  const m = e?.message || String(e);
+  if (e?.code === '23505') return 'Ya tenés una categoría con ese nombre.';
+  if (e?.code === '23503') return 'Esta categoría tiene gastos cargados, así que no se puede eliminar. Desactivala para que deje de aparecer.';
+  if (/Invalid login credentials/i.test(m)) return 'Mail o contraseña incorrectos.';
+  if (/Email not confirmed/i.test(m)) return 'Todavía no confirmaste tu mail. Revisá tu bandeja de entrada.';
+  if (/already registered/i.test(m)) return 'Ya existe una cuenta con ese mail.';
+  if (/Password should be/i.test(m)) return 'La contraseña tiene que tener al menos 6 caracteres.';
+  if (/Failed to fetch|NetworkError/i.test(m)) return 'No hay conexión. Revisá internet y probá de nuevo.';
+  return m;
+}
+
+/* ================= ESTADO ================= */
+const state = { user:null, cats:[], pend:[], res:[], editGasto:null, volverA:null, editCat:null, icono:'tag' };
+const cat = id => state.cats.find(c => c.id === id);
+
+/* ================= LOGIN ================= */
+let modoRegistro = false;
+$('#a-alt').onclick = () => {
+  modoRegistro = !modoRegistro;
+  $('#a-btn').textContent = modoRegistro ? 'Crear cuenta' : 'Entrar';
+  $('#a-sub').textContent = modoRegistro ? 'Creá tu cuenta con tu mail.' : 'Entrá con tu cuenta.';
+  $('#a-alt-txt').textContent = modoRegistro ? '¿Ya tenés cuenta?' : '¿No tenés cuenta?';
+  $('#a-alt').textContent = modoRegistro ? 'Entrar' : 'Crear cuenta';
+  $('#a-pass').autocomplete = modoRegistro ? 'new-password' : 'current-password';
+  showErr('#a-err', '');
+};
+$('#auth-form').onsubmit = async ev => {
+  ev.preventDefault();
+  const email = $('#a-email').value.trim(), password = $('#a-pass').value;
+  if (!email || !password) return showErr('#a-err', 'Completá mail y contraseña.');
+  showErr('#a-err', ''); $('#a-btn').disabled = true;
+  try {
+    if (modoRegistro) {
+      const { data, error } = await sb.auth.signUp({ email, password, options:{ emailRedirectTo: location.origin + location.pathname } });
+      if (error) throw error;
+      if (!data.session) showErr('#a-err', 'Te mandamos un mail para confirmar la cuenta. Abrí el link y después entrá acá.');
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+  } catch (e) { showErr('#a-err', traducirError(e)); }
+  $('#a-btn').disabled = false;
+};
+$('#btn-salir').onclick = () => sb.auth.signOut();
+
+function setSession(session){
+  const u = session?.user || null;
+  if (u && state.user?.id === u.id) return;
+  state.user = u;
+  $('#auth').hidden = !!u;
+  $('#app').hidden = !u;
+  if (u) setTimeout(iniciarApp, 0);
+}
+
+/* ================= NAVEGACIÓN ================= */
+function go(view){
+  $$('.view').forEach(v => v.hidden = v.id !== 'v-' + view);
+  $$('.tabs button[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === view));
+  window.scrollTo(0, 0);
+}
+$$('.tabs button[data-view]').forEach(b => b.onclick = () => {
+  const v = b.dataset.view;
+  if (v === 'cargar') abrirCargar();
+  else if (v === 'categorias') { cerrarCatForm(); go(v); }
+  else if (v === 'consultas') { go(v); buscar(); }
+  else { go(v); renderInicio(); }
+});
+
+/* ================= DATOS ================= */
+async function loadCats(){
+  const { data, error } = await sb.from('categorias').select('*').order('nombre');
+  if (error) throw error;
+  state.cats = data;
+}
+async function loadPend(){
+  const { data, error } = await sb.rpc('vencimientos_pendientes');
+  if (error) throw error;
+  state.pend = data || [];
+}
+async function refrescar(){
+  await Promise.all([loadCats(), loadPend()]);
+  llenarSelectsCat();
+}
+
+async function iniciarApp(){
+  const n = new Date();
+  $('#c-mes').value = `${n.getFullYear()}-${pad(n.getMonth()+1)}`;
+  $('#c-desde').value = `${n.getFullYear()}-${pad(n.getMonth()+1)}-01`;
+  $('#c-hasta').value = hoy();
+  try { await refrescar(); } catch (e) { toast(traducirError(e)); }
+  go('inicio');
+  renderInicio();
+}
+
+/* ================= INICIO ================= */
+function talon(p){
+  const [, m, d] = p.fecha_vto.split('-');
+  const dias = diffDias(p.fecha_vto);
+  let cuando = dias < 0 ? `Venció hace ${-dias} día${dias === -1 ? '' : 's'}`
+             : dias === 0 ? 'Vence hoy' : dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
+  const c = cat(p.categoria_id);
+  const icono = c?.icono || p.icono || 'tag';
+  const delMes = p.vencido ? `${esc(p.nombre)} de ${MESES[Number(m)-1]}` : esc(p.nombre);
+  return `<button class="vto ${p.vencido ? 'late' : ''}" data-cat="${p.categoria_id}" data-per="${p.periodo}">
+    <span class="stub"><b class="num">${Number(d)}</b><small>${MESES[Number(m)-1].slice(0,3)}</small></span>
+    <span class="vto-body">
+      <span class="ico"><i class="ti ti-${esc(icono)}" aria-hidden="true"></i></span>
+      <span class="vto-txt"><strong>${delMes}</strong><span>${cuando}</span></span>
+      <span class="vto-imp num">${Number(p.importe_estimado) > 0 ? fmt(p.importe_estimado) : '<span class="muted">—</span>'}</span>
+    </span></button>`;
+}
+
+function renderInicio(){
+  const n = new Date();
+  $('#i-mes').textContent = cap(MESES[n.getMonth()]);
+  $('#i-anio').textContent = n.getFullYear();
+
+  const venc = state.pend.filter(p => p.vencido);
+  const prox = state.pend.filter(p => !p.vencido);
+  const total = state.pend.reduce((a, p) => a + Number(p.importe_estimado || 0), 0);
+
+  if (!state.cats.length) {
+    $('#i-resumen').textContent = '';
+    $('#i-vtos').innerHTML = `<div class="vacio"><p>Empezá creando tus categorías: los servicios y gastos fijos con su vencimiento, y las de gastos sueltos como supermercado.</p>
+      <button class="btn primary" id="i-crear"><i class="ti ti-plus" aria-hidden="true"></i>Crear categoría</button></div>`;
+    $('#i-crear').onclick = () => { go('categorias'); abrirCatForm(); };
+  } else if (!state.pend.length) {
+    $('#i-resumen').textContent = 'Tenés todo pagado este mes.';
+    $('#i-vtos').innerHTML = '';
+  } else {
+    const cant = state.pend.length;
+    $('#i-resumen').innerHTML = `Te ${cant === 1 ? 'falta' : 'faltan'} pagar <b class="num">${cant}</b> vencimiento${cant === 1 ? '' : 's'}` +
+      (total > 0 ? `, unos <b class="num">${fmt(total)}</b>.` : '.');
+    let h = '';
+    if (venc.length) h += `<h2 style="color:var(--danger)">Atrasados</h2><div class="lista">${venc.map(talon).join('')}</div>`;
+    if (prox.length) h += `<h2>Este mes</h2><div class="lista">${prox.map(talon).join('')}</div>`;
+    $('#i-vtos').innerHTML = h;
+    $$('#i-vtos .vto').forEach(b => b.onclick = () => {
+      const p = state.pend.find(x => x.categoria_id === b.dataset.cat && x.periodo === b.dataset.per);
+      abrirCargar({ categoria_id: p.categoria_id, periodo: p.periodo, importe: p.importe_estimado, volver:'inicio' });
+    });
+  }
+  renderRecientes();
+}
+
+async function renderRecientes(){
+  const box = $('#i-recientes');
+  const { data, error } = await sb.from('gastos').select('*, categorias(nombre, icono)')
+    .order('fecha', { ascending:false }).order('created_at', { ascending:false }).limit(6);
+  if (error) { box.innerHTML = `<p class="err">${esc(traducirError(error))}</p>`; return; }
+  if (!data.length) { box.innerHTML = '<p class="muted">Todavía no cargaste gastos.</p>'; return; }
+  box.innerHTML = data.map(movHTML).join('');
+  $$('#i-recientes .mov').forEach(b => b.onclick = () => {
+    const g = data.find(x => x.id === b.dataset.id);
+    abrirCargar({ gasto: g, volver:'inicio' });
+  });
+}
+
+function movHTML(g){
+  const detalle = [fmtFecha(g.fecha), MEDIOS[g.medio_pago], g.observacion].filter(Boolean).map(esc).join(', ');
+  return `<button class="mov" data-id="${g.id}">
+    <span class="ico"><i class="ti ti-${esc(g.categorias?.icono || 'tag')}" aria-hidden="true"></i></span>
+    <span class="t"><strong>${esc(g.categorias?.nombre || '')}</strong><span>${detalle}</span></span>
+    <span class="imp num">${fmt(g.importe)}</span></button>`;
+}
+
+/* ================= CARGAR GASTO ================= */
+$('#g-medios').innerHTML = Object.entries(MEDIOS).map(([k, v]) =>
+  `<label><input type="radio" name="medio" value="${k}">${v}</label>`).join('');
+
+function llenarSelectsCat(incluirId){
+  const activas = state.cats.filter(c => c.activa || c.id === incluirId);
+  $('#g-cat').innerHTML = '<option value="">Elegí una categoría</option>' +
+    activas.map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+  const prev = $('#c-cat').value;
+  $('#c-cat').innerHTML = '<option value="">Todas las categorías</option>' +
+    state.cats.map(c => `<option value="${c.id}">${esc(c.nombre)}${c.activa ? '' : ' (inactiva)'}</option>`).join('');
+  $('#c-cat').value = prev;
+}
+
+function abrirCargar(o = {}){
+  const g = o.gasto || null;
+  state.editGasto = g;
+  state.volverA = o.volver || null;
+  llenarSelectsCat(g?.categoria_id);
+  showErr('#g-err', '');
+  $('#g-titulo').textContent = g ? 'Editar gasto' : 'Cargar gasto';
+  $('#g-ok').textContent = g ? 'Guardar cambios' : 'Guardar gasto';
+  $('#g-del').hidden = !g;
+  $('#g-cancel').hidden = !state.volverA;
+  $('#g-cat').value = g?.categoria_id || o.categoria_id || '';
+  $('#g-imp').value = g ? importeTxt(g.importe) : (Number(o.importe) > 0 ? importeTxt(o.importe) : '');
+  $('#g-fecha').value = g?.fecha || hoy();
+  $('#g-obs').value = g?.observacion || '';
+  const medio = g?.medio_pago || localStorage.getItem('ultimoMedio') || 'efectivo';
+  $$('input[name=medio]').forEach(r => r.checked = r.value === medio);
+  go('cargar');
+  alCambiarCat({ periodo: g ? (g.periodo || '') : o.periodo, desdeVto: !!o.categoria_id });
+}
+
+async function alCambiarCat(o = {}){
+  const c = cat($('#g-cat').value);
+  $('#g-ico').innerHTML = `<i class="ti ti-${esc(c?.icono || 'tag')}" aria-hidden="true"></i>`;
+  $('#g-imp').placeholder = '0';
+  const wrap = $('#g-per-wrap');
+  if (!c || !c.es_fija) { wrap.hidden = true; return; }
+  wrap.hidden = false;
+
+  const pend = state.pend.filter(p => p.categoria_id === c.id).sort((a, b) => a.periodo.localeCompare(b.periodo));
+  const opts = pend.map(p => ({ v:p.periodo, t:`${fmtPer(p.periodo)} (vence ${fmtFecha(p.fecha_vto)})` }));
+  if (o.periodo && !opts.some(x => x.v === o.periodo)) opts.unshift({ v:o.periodo, t:fmtPer(o.periodo) });
+  opts.push({ v:'__otro', t:'Otro mes…' }, { v:'', t:'No corresponde a un vencimiento' });
+  $('#g-per').innerHTML = opts.map(x => `<option value="${x.v}">${esc(x.t)}</option>`).join('');
+  $('#g-per').value = o.periodo !== undefined ? o.periodo : (pend[0]?.periodo ?? '');
+  $('#g-per-otro').hidden = true;
+
+  if (!state.editGasto && !o.desdeVto) {
+    if (Number(c.importe_estimado) > 0) $('#g-imp').value = importeTxt(c.importe_estimado);
+    else {
+      const { data } = await sb.from('gastos').select('importe').eq('categoria_id', c.id)
+        .order('fecha', { ascending:false }).limit(1);
+      if (data?.[0]) $('#g-imp').placeholder = `Último: ${fmt(data[0].importe)}`;
+    }
+  }
+}
+$('#g-cat').onchange = () => { if (!state.editGasto) $('#g-imp').value = ''; alCambiarCat(); };
+$('#g-per').onchange = () => {
+  const otro = $('#g-per').value === '__otro';
+  $('#g-per-otro').hidden = !otro;
+  if (otro && !$('#g-per-otro').value) $('#g-per-otro').value = hoy().slice(0, 7);
+};
+
+function volverDespues(){
+  if (state.volverA === 'consultas') { go('consultas'); buscar(); }
+  else if (state.volverA === 'inicio') { go('inicio'); renderInicio(); }
+  else abrirCargar();
+}
+$('#g-cancel').onclick = volverDespues;
+
+$('#g-form').onsubmit = async ev => {
+  ev.preventDefault();
+  const c = cat($('#g-cat').value);
+  const importe = parseImporte($('#g-imp').value);
+  const fecha = $('#g-fecha').value;
+  const medio = $('input[name=medio]:checked')?.value || 'efectivo';
+  if (!c) return showErr('#g-err', 'Elegí una categoría.');
+  if (!(importe > 0)) return showErr('#g-err', 'Ingresá un importe mayor a cero.');
+  if (!fecha) return showErr('#g-err', 'Ingresá la fecha.');
+  let periodo = null;
+  if (c.es_fija) {
+    const sel = $('#g-per').value;
+    if (sel === '__otro') {
+      if (!$('#g-per-otro').value) return showErr('#g-err', 'Elegí el mes del vencimiento.');
+      periodo = $('#g-per-otro').value + '-01';
+    } else periodo = sel || null;
+  }
+  showErr('#g-err', ''); $('#g-ok').disabled = true;
+  const datos = { categoria_id:c.id, importe, fecha, medio_pago:medio, observacion:$('#g-obs').value.trim() || null, periodo };
+  try {
+    const q = state.editGasto
+      ? sb.from('gastos').update(datos).eq('id', state.editGasto.id)
+      : sb.from('gastos').insert(datos);
+    const { error } = await q;
+    if (error) throw error;
+    localStorage.setItem('ultimoMedio', medio);
+    toast(state.editGasto ? 'Cambios guardados' : 'Gasto guardado');
+    await loadPend();
+    volverDespues();
+  } catch (e) { showErr('#g-err', traducirError(e)); }
+  $('#g-ok').disabled = false;
+};
+
+$('#g-del').onclick = async () => {
+  if (!state.editGasto || !confirm('¿Eliminar este gasto?')) return;
+  const { error } = await sb.from('gastos').delete().eq('id', state.editGasto.id);
+  if (error) return showErr('#g-err', traducirError(error));
+  toast('Gasto eliminado');
+  await loadPend();
+  volverDespues();
+};
+
+/* ================= CONSULTAS ================= */
+$$('input[name=c-modo]').forEach(r => r.onchange = () => {
+  const mes = $('input[name=c-modo]:checked').value === 'mes';
+  $('#c-mes-wrap').hidden = !mes;
+  $('#c-desde-wrap').hidden = mes;
+  $('#c-hasta-wrap').hidden = mes;
+  buscar();
+});
+['#c-mes', '#c-desde', '#c-hasta', '#c-cat'].forEach(s => $(s).onchange = buscar);
+
+async function buscar(){
+  let desde, hasta;
+  if ($('input[name=c-modo]:checked').value === 'mes') {
+    const v = $('#c-mes').value;
+    if (!v) return;
+    const [y, m] = v.split('-').map(Number);
+    desde = `${v}-01`; hasta = `${v}-${pad(ultimoDia(y, m))}`;
+  } else {
+    desde = $('#c-desde').value; hasta = $('#c-hasta').value;
+    if (!desde || !hasta) return;
+    if (desde > hasta) return showErr('#c-err', 'La fecha "desde" tiene que ser anterior a "hasta".');
+  }
+  showErr('#c-err', '');
+  const catId = $('#c-cat').value;
+  let q = sb.from('gastos').select('*, categorias(nombre, icono)')
+    .gte('fecha', desde).lte('fecha', hasta)
+    .order('fecha', { ascending:false }).order('created_at', { ascending:false });
+  if (catId) q = q.eq('categoria_id', catId);
+  const { data, error } = await q;
+  if (error) return showErr('#c-err', traducirError(error));
+  state.res = data;
+
+  const total = data.reduce((a, g) => a + Number(g.importe), 0);
+  let h = `<div class="totales"><span class="muted">${data.length} gasto${data.length === 1 ? '' : 's'}</span><strong class="num">${fmt(total)}</strong></div>`;
+  if (!data.length) h += '<p class="muted">No hay gastos en ese período.</p>';
+  if (!catId && data.length) {
+    const sub = {};
+    data.forEach(g => { const k = g.categorias?.nombre || ''; sub[k] = (sub[k] || 0) + Number(g.importe); });
+    h += '<h2>Por categoría</h2>' + Object.entries(sub).sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `<div class="sub"><span>${esc(k)}</span><span class="num">${fmt(v)}</span></div>`).join('');
+  }
+  if (data.length) h += '<h2>Detalle</h2>' + data.map(movHTML).join('');
+  $('#c-res').innerHTML = h;
+  $$('#c-res .mov').forEach(b => b.onclick = () => abrirCargar({ gasto: state.res.find(x => x.id === b.dataset.id), volver:'consultas' }));
+}
+
+/* ================= CATEGORÍAS ================= */
+$('#k-mes').innerHTML = MESES.map((m, i) => `<option value="${i+1}">${cap(m)}</option>`).join('');
+$('#k-cada-chips').innerHTML = [[1,'Mensual'],[2,'Bimestral'],[3,'Trimestral'],[6,'Semestral'],[12,'Anual']]
+  .map(([n, t]) => `<button type="button" class="chip-btn" data-n="${n}">${t}</button>`).join('');
+$('#k-iconos').innerHTML = ICONOS.map(i => `<button type="button" data-i="${i}" aria-label="${i}"><i class="ti ti-${i}" aria-hidden="true"></i></button>`).join('');
+
+function marcarIcono(){ $$('#k-iconos button').forEach(b => b.classList.toggle('on', b.dataset.i === state.icono)); }
+$$('#k-iconos button').forEach(b => b.onclick = () => { state.icono = b.dataset.i; marcarIcono(); });
+
+function actualizarCada(){
+  const n = Number($('#k-cada').value);
+  $$('#k-cada-chips button').forEach(b => b.classList.toggle('on', Number(b.dataset.n) === n));
+  $('#k-mes-wrap').hidden = n === 1;
+}
+$$('#k-cada-chips button').forEach(b => b.onclick = () => { $('#k-cada').value = b.dataset.n; actualizarCada(); });
+$('#k-cada').oninput = actualizarCada;
+$('#k-fija').onchange = () => $('#k-fija-campos').hidden = !$('#k-fija').checked;
+
+function describir(c){
+  if (!c.es_fija) return 'Sin vencimiento';
+  let t = c.cada_meses === 1 ? `Todos los meses, día ${c.dia_vto}`
+        : `Cada ${c.cada_meses} meses desde ${MESES[c.mes_inicio-1]}, día ${c.dia_vto}`;
+  if (Number(c.importe_estimado) > 0) t += `, ${fmt(c.importe_estimado)}`;
+  return t;
+}
+
+function renderCats(){
+  const lista = [...state.cats].sort((a, b) => (b.activa - a.activa) || a.nombre.localeCompare(b.nombre));
+  if (!lista.length) { $('#k-lista').innerHTML = '<div class="vacio"><p>Todavía no tenés categorías. Creá la primera con el botón Nueva.</p></div>'; return; }
+  $('#k-lista').innerHTML = lista.map(c => `<button class="mov cat-row ${c.activa ? '' : 'off'}" data-id="${c.id}">
+    <span class="ico"><i class="ti ti-${esc(c.icono)}" aria-hidden="true"></i></span>
+    <span class="t"><strong>${esc(c.nombre)}${c.activa ? '' : ' (inactiva)'}</strong><span>${esc(describir(c))}</span></span>
+    <i class="ti ti-chevron-right muted" aria-hidden="true"></i></button>`).join('');
+  $$('#k-lista .mov').forEach(b => b.onclick = () => abrirCatForm(cat(b.dataset.id)));
+}
+
+function abrirCatForm(c = null){
+  state.editCat = c;
+  showErr('#k-err', '');
+  $('#k-titulo').textContent = c ? 'Editar categoría' : 'Nueva categoría';
+  $('#k-nombre').value = c?.nombre || '';
+  state.icono = c?.icono || 'tag'; marcarIcono();
+  $('#k-fija').checked = !!c?.es_fija;
+  $('#k-fija-campos').hidden = !c?.es_fija;
+  $('#k-cada').value = c?.cada_meses || 1;
+  $('#k-mes').value = c?.mes_inicio || (new Date().getMonth() + 1);
+  $('#k-dia').value = c?.dia_vto || '';
+  $('#k-est').value = c && Number(c.importe_estimado) > 0 ? importeTxt(c.importe_estimado) : '';
+  $('#k-desde').value = c?.vigente_desde || hoy();
+  $('#k-activa').checked = c ? c.activa : true;
+  $('#k-activa-wrap').hidden = !c;
+  $('#k-del').hidden = !c;
+  actualizarCada();
+  $('#k-lista-wrap').hidden = true;
+  $('#k-form').hidden = false;
+  window.scrollTo(0, 0);
+}
+function cerrarCatForm(){
+  $('#k-form').hidden = true;
+  $('#k-lista-wrap').hidden = false;
+  renderCats();
+}
+$('#k-nueva').onclick = () => abrirCatForm();
+$('#k-cancel').onclick = cerrarCatForm;
+
+$('#k-form').onsubmit = async ev => {
+  ev.preventDefault();
+  const nombre = $('#k-nombre').value.trim();
+  const es_fija = $('#k-fija').checked;
+  if (!nombre) return showErr('#k-err', 'Ingresá un nombre.');
+  const datos = { nombre, icono: state.icono, es_fija, activa: $('#k-activa').checked,
+    cada_meses:null, mes_inicio:null, dia_vto:null, importe_estimado:0 };
+  if (es_fija) {
+    const cada = Number($('#k-cada').value), dia = Number($('#k-dia').value);
+    const est = $('#k-est').value.trim() ? parseImporte($('#k-est').value) : 0;
+    if (!(cada >= 1 && cada <= 24)) return showErr('#k-err', 'La repetición tiene que ser entre 1 y 24 meses.');
+    if (!(dia >= 1 && dia <= 31)) return showErr('#k-err', 'El día de vencimiento tiene que ser entre 1 y 31.');
+    if (!(est >= 0)) return showErr('#k-err', 'El importe estimado no es válido.');
+    if (!$('#k-desde').value) return showErr('#k-err', 'Ingresá desde cuándo contar los vencimientos.');
+    Object.assign(datos, { cada_meses:cada, mes_inicio: cada === 1 ? 1 : Number($('#k-mes').value),
+      dia_vto:dia, importe_estimado:est, vigente_desde:$('#k-desde').value });
+  }
+  showErr('#k-err', ''); $('#k-ok').disabled = true;
+  try {
+    const q = state.editCat
+      ? sb.from('categorias').update(datos).eq('id', state.editCat.id)
+      : sb.from('categorias').insert(datos);
+    const { error } = await q;
+    if (error) throw error;
+    toast('Categoría guardada');
+    await refrescar();
+    cerrarCatForm();
+  } catch (e) { showErr('#k-err', traducirError(e)); }
+  $('#k-ok').disabled = false;
+};
+
+$('#k-del').onclick = async () => {
+  if (!state.editCat || !confirm(`¿Eliminar la categoría ${state.editCat.nombre}?`)) return;
+  const { error } = await sb.from('categorias').delete().eq('id', state.editCat.id);
+  if (error) return showErr('#k-err', traducirError(error));
+  toast('Categoría eliminada');
+  await refrescar();
+  cerrarCatForm();
+};
+
+/* ================= ARRANQUE ================= */
+sb.auth.onAuthStateChange((_ev, session) => setSession(session));
+sb.auth.getSession().then(({ data }) => setSession(data.session));
+</script>
+</body>
+</html>
