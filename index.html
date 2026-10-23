@@ -90,6 +90,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
 .switch input:checked::after{transform:translateX(18px)}
 .ico{width:38px; height:38px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:20px; flex:none}
 .err{color:var(--danger); font-size:14px; margin:8px 0 0}
+.tiles{display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(220px,1fr))}
+.tile{display:flex; flex-direction:column; align-items:flex-start; gap:6px; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; min-height:132px}
+.tile:hover{border-color:var(--accent)}
+.tile i{font-size:24px; color:var(--accent); margin-bottom:auto}
+.tile strong{font-size:20px; font-weight:600; letter-spacing:-.01em; margin-top:14px}
+.tile span{color:var(--muted); font-size:14px}
+.tile span.late{color:var(--danger)}
+.tile.nuevo{border-style:dashed; align-items:center; justify-content:center; color:var(--accent); font-weight:500}
+.tile.nuevo i{margin:0}
 .link{background:none; border:0; color:var(--accent); padding:0; font-weight:500; text-decoration:underline}
 
 /* ---------- inicio: talones de vencimiento ---------- */
@@ -180,10 +189,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
     <label class="esp-bar"><i class="ti ti-layout-grid" aria-hidden="true"></i><select id="esp-sel" aria-label="Espacio"></select></label>
 
     <!-- ---------- ELEGIR ESPACIO (al arrancar) ---------- -->
-    <section class="view narrow" id="v-elegir" hidden>
+    <section class="view" id="v-elegir" hidden style="max-width:760px">
       <h1>¿Con qué espacio querés trabajar?</h1>
-      <p class="intro">La app lo va a recordar. Después lo podés cambiar desde arriba.</p>
-      <div id="el-lista"></div>
+      <p class="intro">Después lo podés cambiar desde el selector de arriba.</p>
+      <div class="tiles" id="el-lista"></div>
     </section>
 
     <!-- ---------- INICIO ---------- -->
@@ -388,7 +397,7 @@ function traducirError(e, ctx){
 
 /* ================= ESTADO ================= */
 const state = { user:null, espacios:[], esp:null, cats:[], pend:[], res:[], view:'inicio', verTodos:false,
-  editGasto:null, volverA:null, editCat:null, editEsp:null, icono:'tag' };
+  editGasto:null, volverA:null, editCat:null, editEsp:null, icono:'tag', desdeElegir:false };
 const cat = id => state.cats.find(c => c.id === id);
 const espacio = id => state.espacios.find(e => e.id === id);
 const espNombre = id => espacio(id)?.nombre || '';
@@ -480,7 +489,7 @@ function fijarEsp(id){
 }
 function llenarEspSelects(){
   $('#esp-sel').innerHTML = espActivos().map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join('') +
-    '<option value="__admin">Administrar espacios…</option>';
+    '<option value="__inicio">Ver todos los espacios…</option><option value="__admin">Administrar espacios…</option>';
   $('#esp-sel').value = state.esp;
   const prev = $('#c-esp').value;
   $('#c-esp').innerHTML = '<option value="">Todos los espacios</option>' +
@@ -498,6 +507,7 @@ function cambiarEsp(id){
 $('#esp-sel').onchange = () => {
   const v = $('#esp-sel').value;
   if (v === '__admin') { $('#esp-sel').value = state.esp; abrirVista('espacios'); }
+  else if (v === '__inicio') { $('#esp-sel').value = state.esp; mostrarElegir(); }
   else cambiarEsp(v);
 };
 
@@ -516,24 +526,30 @@ async function iniciarApp(){
     await Promise.all([loadCats(), loadPend()]);
   } catch (e) { toast(traducirError(e)); return; }
 
-  const activos = espActivos();
-  const guardado = localStorage.getItem('espacioActual');
-  const elegido = activos.find(e => e.id === guardado)?.id || (activos.length === 1 ? activos[0].id : null);
-  if (!elegido) return mostrarElegir();
-  fijarEsp(elegido);
-  llenarEspSelects();
-  $('#c-esp').value = elegido;
-  llenarCCat();
-  abrirVista('inicio');
+  mostrarElegir();
+}
+
+function resumenEsp(e){
+  if (!catsDe(e.id).length) return '<span>Sin categorías todavía</span>';
+  const pend = state.pend.filter(p => p.espacio_id === e.id);
+  if (!pend.length) return '<span>Todo pagado este mes</span>';
+  const atr = pend.filter(p => p.vencido).length;
+  let h = `<span>${pend.length} ${plural(pend.length, 'vencimiento pendiente', 'vencimientos pendientes')}</span>`;
+  if (atr) h += `<span class="late">${atr} ${plural(atr, 'atrasado', 'atrasados')}</span>`;
+  return h;
 }
 
 function mostrarElegir(){
+  state.desdeElegir = false;
   $('#app').classList.add('eligiendo');
-  $('#el-lista').innerHTML = espActivos().map(e => `<button class="mov" data-id="${e.id}">
-    <span class="ico"><i class="ti ti-layout-grid" aria-hidden="true"></i></span>
-    <span class="t"><strong>${esc(e.nombre)}</strong><span>${catsDe(e.id).length} ${plural(catsDe(e.id).length, 'categoría', 'categorías')}</span></span>
-    <i class="ti ti-chevron-right muted" aria-hidden="true"></i></button>`).join('');
-  $$('#el-lista .mov').forEach(b => b.onclick = () => {
+  const ultimo = localStorage.getItem('espacioActual');
+  const lista = [...espActivos()].sort((a, b) => (b.id === ultimo) - (a.id === ultimo));
+  $('#el-lista').innerHTML = lista.map(e => `<button class="tile" data-id="${e.id}">
+    <i class="ti ti-layout-grid" aria-hidden="true"></i>
+    <strong>${esc(e.nombre)}</strong>${resumenEsp(e)}</button>`).join('') +
+    `<button class="tile nuevo" id="el-nuevo"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo espacio</button>`;
+  $('#el-nuevo').onclick = () => { go('espacios'); abrirEspForm(); state.desdeElegir = true; };
+  $$('#el-lista .tile[data-id]').forEach(b => b.onclick = () => {
     $('#app').classList.remove('eligiendo');
     fijarEsp(b.dataset.id);
     llenarEspSelects();
@@ -949,7 +965,7 @@ function cerrarEspForm(){
   renderEspacios();
 }
 $('#e-nuevo').onclick = () => abrirEspForm();
-$('#e-cancel').onclick = cerrarEspForm;
+$('#e-cancel').onclick = () => state.desdeElegir ? mostrarElegir() : cerrarEspForm();
 
 $('#e-form').onsubmit = async ev => {
   ev.preventDefault();
@@ -981,7 +997,7 @@ $('#e-form').onsubmit = async ev => {
     }
     toast('Espacio guardado');
     await refrescar();
-    cerrarEspForm();
+    if (state.desdeElegir) mostrarElegir(); else cerrarEspForm();
   } catch (err) { showErr('#e-err', traducirError(err, 'espacio')); }
   $('#e-ok').disabled = false;
 };
