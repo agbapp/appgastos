@@ -37,7 +37,7 @@ button{cursor:pointer}
 .muted{color:var(--muted)}
 
 /* ---------- estructura ---------- */
-main{padding:calc(20px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom)); max-width:1080px; margin:0 auto}
+main{padding:calc(16px + env(safe-area-inset-top)) 18px calc(96px + env(safe-area-inset-bottom)); max-width:1080px; margin:0 auto}
 .tabs{position:fixed; left:0; right:0; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); z-index:10}
 .tabs button{flex:1; background:none; border:0; padding:9px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:12px; color:var(--muted)}
 .tabs button i{font-size:22px}
@@ -49,14 +49,22 @@ main{padding:calc(20px + env(safe-area-inset-top)) 18px calc(96px + env(safe-are
   .tabs button{flex:none; flex-direction:row; gap:12px; font-size:15px; padding:10px 12px; border-radius:10px}
   .tabs button.on{background:var(--accent-soft)}
   .tabs .salir{margin-top:auto}
-  main{margin-left:220px; padding:40px 40px 60px}
+  main{margin-left:220px; padding:32px 40px 60px}
 }
+.eligiendo .tabs,.eligiendo .esp-bar{display:none !important}
+@media (min-width:900px){ .eligiendo main{margin-left:auto} }
 h1{font-size:26px; font-weight:600; letter-spacing:-.015em; margin:0 0 20px}
 h2{font-size:15px; font-weight:600; margin:28px 0 8px}
 .narrow{max-width:520px}
 
+/* selector de espacio */
+.esp-bar{display:inline-flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:0 8px 0 14px; margin-bottom:20px; max-width:100%}
+.esp-bar i{color:var(--accent); font-size:18px}
+.esp-bar select{border:0; background:transparent; min-height:40px; padding:8px 4px; font-weight:500; width:auto; max-width:240px}
+.esp-bar select:focus{outline:none}
+
 /* ---------- controles ---------- */
-label.f{display:block; font-size:13px; color:var(--muted); margin:0 0 6px}
+label.f,.f{display:block; font-size:13px; color:var(--muted); margin:0 0 6px}
 .field{margin-bottom:16px}
 input[type=text],input[type=email],input[type=password],input[type=date],input[type=month],input[type=number],select,textarea{
   width:100%; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:11px 12px; min-height:46px}
@@ -82,6 +90,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
 .switch input:checked::after{transform:translateX(18px)}
 .ico{width:38px; height:38px; border-radius:10px; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:20px; flex:none}
 .err{color:var(--danger); font-size:14px; margin:8px 0 0}
+.link{background:none; border:0; color:var(--accent); padding:0; font-weight:500; text-decoration:underline}
 
 /* ---------- inicio: talones de vencimiento ---------- */
 .mes-titulo{font-size:44px; font-weight:600; letter-spacing:-.03em; line-height:1; margin:4px 0 6px}
@@ -115,23 +124,26 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
 .totales{display:flex; align-items:baseline; justify-content:space-between; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 18px; margin:20px 0 4px}
 .totales strong{font-size:26px; font-weight:600; letter-spacing:-.02em}
 .sub{display:flex; justify-content:space-between; gap:12px; padding:8px 2px; border-bottom:1px solid var(--line); font-size:15px}
-.filtros{display:grid; gap:12px; grid-template-columns:1fr}
-@media (min-width:700px){ .filtros{grid-template-columns:repeat(3, minmax(0,1fr)); align-items:end} }
+.sub.grupo{font-weight:600; border-bottom-color:var(--ink); margin-top:10px}
+.sub.hijo{padding-left:16px; color:var(--muted)}
+.filtros{display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); align-items:end}
 
-/* ---------- categorías ---------- */
+/* ---------- categorías / espacios ---------- */
 .iconos{display:grid; grid-template-columns:repeat(auto-fill, minmax(44px,1fr)); gap:6px}
 .iconos button{height:44px; border-radius:10px; border:1px solid var(--line); background:var(--surface); font-size:20px}
 .iconos button.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
 .fija-campos{border-left:3px solid var(--accent); padding-left:14px; margin:4px 0 16px}
 .dos{display:grid; grid-template-columns:1fr 1fr; gap:12px}
-.cat-row.off{opacity:.55}
+.off{opacity:.55}
+.head{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px}
+.head h1{margin:0}
+.intro{color:var(--muted); margin:0 0 16px}
 
 /* ---------- login ---------- */
 .auth{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px}
 .auth-box{width:100%; max-width:380px}
 .auth-box .mes-titulo{font-size:40px; margin-bottom:6px}
 .auth-box p.muted{margin:0 0 28px}
-.link{background:none; border:0; color:var(--accent); padding:0; font-weight:500; text-decoration:underline}
 
 .toast{position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:11px 18px; border-radius:10px; font-size:15px; z-index:50; max-width:calc(100% - 32px)}
 @media (min-width:900px){ .toast{bottom:28px; left:calc(50% + 110px)} }
@@ -165,6 +177,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
   </nav>
 
   <main>
+    <label class="esp-bar"><i class="ti ti-layout-grid" aria-hidden="true"></i><select id="esp-sel" aria-label="Espacio"></select></label>
+
+    <!-- ---------- ELEGIR ESPACIO (al arrancar) ---------- -->
+    <section class="view narrow" id="v-elegir" hidden>
+      <h1>¿Con qué espacio querés trabajar?</h1>
+      <p class="intro">La app lo va a recordar. Después lo podés cambiar desde arriba.</p>
+      <div id="el-lista"></div>
+    </section>
+
     <!-- ---------- INICIO ---------- -->
     <section class="view" id="v-inicio">
       <div class="inicio-grid">
@@ -172,6 +193,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
           <div class="muted" id="i-anio"></div>
           <div class="mes-titulo" id="i-mes"></div>
           <p class="resumen" id="i-resumen"></p>
+          <button class="chip-btn" id="i-todos" hidden>Ver todos los espacios</button>
           <div id="i-vtos"></div>
         </div>
         <div>
@@ -202,7 +224,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
           <div class="field"><label class="f" for="g-fecha">Fecha</label><input type="date" id="g-fecha"></div>
         </div>
         <div class="field">
-          <span class="f" style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px">Medio de pago</span>
+          <span class="f">Medio de pago</span>
           <div class="chips" id="g-medios"></div>
         </div>
         <div class="field"><label class="f" for="g-obs">Observación</label><textarea id="g-obs" placeholder="Opcional"></textarea></div>
@@ -226,6 +248,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
         <div id="c-mes-wrap"><label class="f" for="c-mes">Mes</label><input type="month" id="c-mes"></div>
         <div id="c-desde-wrap" hidden><label class="f" for="c-desde">Desde</label><input type="date" id="c-desde"></div>
         <div id="c-hasta-wrap" hidden><label class="f" for="c-hasta">Hasta</label><input type="date" id="c-hasta"></div>
+        <div><label class="f" for="c-esp">Espacio</label><select id="c-esp"></select></div>
         <div><label class="f" for="c-cat">Categoría</label><select id="c-cat"></select></div>
       </div>
       <p class="err" id="c-err" hidden></p>
@@ -235,17 +258,19 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
     <!-- ---------- CATEGORÍAS ---------- -->
     <section class="view narrow" id="v-categorias" hidden>
       <div id="k-lista-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px">
-          <h1 style="margin:0">Categorías</h1>
+        <div class="head">
+          <h1>Categorías</h1>
           <button class="btn primary" id="k-nueva"><i class="ti ti-plus" aria-hidden="true"></i>Nueva</button>
         </div>
+        <p class="intro" id="k-intro"></p>
         <div id="k-lista"></div>
+        <p style="margin-top:24px"><button type="button" class="link" id="k-espacios">Administrar espacios</button></p>
       </div>
 
       <form id="k-form" hidden novalidate>
         <h1 id="k-titulo">Nueva categoría</h1>
         <div class="field"><label class="f" for="k-nombre">Nombre</label><input type="text" id="k-nombre" placeholder="Luz, Supermercado, Expensas…"></div>
-        <div class="field"><span class="f" style="display:block; font-size:13px; color:var(--muted); margin-bottom:6px">Ícono</span><div class="iconos" id="k-iconos"></div></div>
+        <div class="field"><span class="f">Ícono</span><div class="iconos" id="k-iconos"></div></div>
         <div class="field"><label class="switch">Tiene vencimiento (gasto fijo)<input type="checkbox" id="k-fija"></label></div>
         <div class="fija-campos" id="k-fija-campos" hidden>
           <div class="field">
@@ -271,6 +296,31 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
         <button type="button" class="btn danger" id="k-del" hidden style="margin-top:12px"><i class="ti ti-trash" aria-hidden="true"></i>Eliminar categoría</button>
       </form>
     </section>
+
+    <!-- ---------- ESPACIOS ---------- -->
+    <section class="view narrow" id="v-espacios" hidden>
+      <div id="e-lista-wrap">
+        <div class="head">
+          <h1>Espacios</h1>
+          <button class="btn primary" id="e-nuevo"><i class="ti ti-plus" aria-hidden="true"></i>Nuevo</button>
+        </div>
+        <p class="intro">Cada espacio tiene sus propias categorías, vencimientos y gastos.</p>
+        <div id="e-lista"></div>
+      </div>
+
+      <form id="e-form" hidden novalidate>
+        <h1 id="e-titulo">Nuevo espacio</h1>
+        <div class="field"><label class="f" for="e-nombre">Nombre</label><input type="text" id="e-nombre" placeholder="Casa, trabajo, una persona…"></div>
+        <div class="field" id="e-copiar-wrap"><label class="f" for="e-copiar">Copiar categorías de</label><select id="e-copiar"></select></div>
+        <div class="field" id="e-activo-wrap" hidden><label class="switch">Activo<input type="checkbox" id="e-activo"></label></div>
+        <p class="err" id="e-err" hidden></p>
+        <div class="row-btns">
+          <button class="btn primary" id="e-ok" style="flex:1">Guardar espacio</button>
+          <button type="button" class="btn" id="e-cancel">Cancelar</button>
+        </div>
+        <button type="button" class="btn danger" id="e-del" hidden style="margin-top:12px"><i class="ti ti-trash" aria-hidden="true"></i>Eliminar espacio</button>
+      </form>
+    </section>
   </main>
 </div>
 
@@ -280,6 +330,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
 /* ================= CONFIGURACIÓN ================= */
 const SUPABASE_URL = 'https://lnasfgksarasubuwhhqb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_eeWDal5BWk7XgR05ha7rHA_DfpUnn66';
+const ESPACIO_INICIAL = 'Gastos casa';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ================= UTILIDADES ================= */
@@ -303,6 +354,7 @@ const fmt = n => pesos.format(Number(n) || 0);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const diffDias = s => { const t = new Date(); t.setHours(0,0,0,0); return Math.round((toDate(s) - t) / 864e5); };
 const ultimoDia = (y, m) => new Date(y, m, 0).getDate();
+const plural = (n, s, p) => n === 1 ? s : p;
 
 function parseImporte(str){
   let s = String(str).trim().replace(/[$\s]/g, '');
@@ -320,10 +372,12 @@ function toast(msg){
 }
 function showErr(sel, msg){ const e = $(sel); e.textContent = msg; e.hidden = !msg; }
 
-function traducirError(e){
+function traducirError(e, ctx){
   const m = e?.message || String(e);
-  if (e?.code === '23505') return 'Ya tenés una categoría con ese nombre.';
-  if (e?.code === '23503') return 'Esta categoría tiene gastos cargados, así que no se puede eliminar. Desactivala para que deje de aparecer.';
+  if (e?.code === '23505') return ctx === 'espacio' ? 'Ya tenés un espacio con ese nombre.' : 'Ya tenés una categoría con ese nombre en este espacio.';
+  if (e?.code === '23503') return ctx === 'espacio'
+    ? 'Este espacio tiene categorías, así que no se puede eliminar. Desactivalo para que deje de aparecer.'
+    : 'Esta categoría tiene gastos cargados, así que no se puede eliminar. Desactivala para que deje de aparecer.';
   if (/Invalid login credentials/i.test(m)) return 'Mail o contraseña incorrectos.';
   if (/Email not confirmed/i.test(m)) return 'Todavía no confirmaste tu mail. Revisá tu bandeja de entrada.';
   if (/already registered/i.test(m)) return 'Ya existe una cuenta con ese mail.';
@@ -333,8 +387,13 @@ function traducirError(e){
 }
 
 /* ================= ESTADO ================= */
-const state = { user:null, cats:[], pend:[], res:[], editGasto:null, volverA:null, editCat:null, icono:'tag' };
+const state = { user:null, espacios:[], esp:null, cats:[], pend:[], res:[], view:'inicio', verTodos:false,
+  editGasto:null, volverA:null, editCat:null, editEsp:null, icono:'tag' };
 const cat = id => state.cats.find(c => c.id === id);
+const espacio = id => state.espacios.find(e => e.id === id);
+const espNombre = id => espacio(id)?.nombre || '';
+const espActivos = () => state.espacios.filter(e => e.activo);
+const catsDe = id => state.cats.filter(c => c.espacio_id === id);
 
 /* ================= LOGIN ================= */
 let modoRegistro = false;
@@ -377,19 +436,26 @@ function setSession(session){
 
 /* ================= NAVEGACIÓN ================= */
 function go(view){
+  if (view !== 'elegir') state.view = view;
   $$('.view').forEach(v => v.hidden = v.id !== 'v-' + view);
   $$('.tabs button[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === view));
   window.scrollTo(0, 0);
 }
-$$('.tabs button[data-view]').forEach(b => b.onclick = () => {
-  const v = b.dataset.view;
+function abrirVista(v){
   if (v === 'cargar') abrirCargar();
-  else if (v === 'categorias') { cerrarCatForm(); go(v); }
+  else if (v === 'categorias') { go(v); cerrarCatForm(); }
+  else if (v === 'espacios') { go(v); cerrarEspForm(); }
   else if (v === 'consultas') { go(v); buscar(); }
-  else { go(v); renderInicio(); }
-});
+  else { go('inicio'); renderInicio(); }
+}
+$$('.tabs button[data-view]').forEach(b => b.onclick = () => abrirVista(b.dataset.view));
 
 /* ================= DATOS ================= */
+async function loadEspacios(){
+  const { data, error } = await sb.from('espacios').select('*').order('created_at');
+  if (error) throw error;
+  state.espacios = data;
+}
 async function loadCats(){
   const { data, error } = await sb.from('categorias').select('*').order('nombre');
   if (error) throw error;
@@ -401,34 +467,96 @@ async function loadPend(){
   state.pend = data || [];
 }
 async function refrescar(){
-  await Promise.all([loadCats(), loadPend()]);
-  llenarSelectsCat();
+  await Promise.all([loadEspacios(), loadCats(), loadPend()]);
+  if (!espActivos().some(e => e.id === state.esp)) fijarEsp(espActivos()[0]?.id);
+  llenarEspSelects();
+  llenarCCat();
 }
+
+/* ================= ESPACIO ACTUAL ================= */
+function fijarEsp(id){
+  state.esp = id;
+  if (id) localStorage.setItem('espacioActual', id);
+}
+function llenarEspSelects(){
+  $('#esp-sel').innerHTML = espActivos().map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join('') +
+    '<option value="__admin">Administrar espacios…</option>';
+  $('#esp-sel').value = state.esp;
+  const prev = $('#c-esp').value;
+  $('#c-esp').innerHTML = '<option value="">Todos los espacios</option>' +
+    state.espacios.map(e => `<option value="${e.id}">${esc(e.nombre)}${e.activo ? '' : ' (inactivo)'}</option>`).join('');
+  $('#c-esp').value = state.espacios.some(e => e.id === prev) || prev === '' ? prev : state.esp;
+}
+function cambiarEsp(id){
+  fijarEsp(id);
+  state.verTodos = false;
+  llenarEspSelects();
+  $('#c-esp').value = id;
+  llenarCCat();
+  abrirVista(state.view);
+}
+$('#esp-sel').onchange = () => {
+  const v = $('#esp-sel').value;
+  if (v === '__admin') { $('#esp-sel').value = state.esp; abrirVista('espacios'); }
+  else cambiarEsp(v);
+};
 
 async function iniciarApp(){
   const n = new Date();
   $('#c-mes').value = `${n.getFullYear()}-${pad(n.getMonth()+1)}`;
   $('#c-desde').value = `${n.getFullYear()}-${pad(n.getMonth()+1)}-01`;
   $('#c-hasta').value = hoy();
-  try { await refrescar(); } catch (e) { toast(traducirError(e)); }
-  go('inicio');
-  renderInicio();
+  try {
+    await loadEspacios();
+    if (!state.espacios.length) {
+      const { error } = await sb.from('espacios').insert({ nombre: ESPACIO_INICIAL });
+      if (error) throw error;
+      await loadEspacios();
+    }
+    await Promise.all([loadCats(), loadPend()]);
+  } catch (e) { toast(traducirError(e)); return; }
+
+  const activos = espActivos();
+  const guardado = localStorage.getItem('espacioActual');
+  const elegido = activos.find(e => e.id === guardado)?.id || (activos.length === 1 ? activos[0].id : null);
+  if (!elegido) return mostrarElegir();
+  fijarEsp(elegido);
+  llenarEspSelects();
+  $('#c-esp').value = elegido;
+  llenarCCat();
+  abrirVista('inicio');
+}
+
+function mostrarElegir(){
+  $('#app').classList.add('eligiendo');
+  $('#el-lista').innerHTML = espActivos().map(e => `<button class="mov" data-id="${e.id}">
+    <span class="ico"><i class="ti ti-layout-grid" aria-hidden="true"></i></span>
+    <span class="t"><strong>${esc(e.nombre)}</strong><span>${catsDe(e.id).length} ${plural(catsDe(e.id).length, 'categoría', 'categorías')}</span></span>
+    <i class="ti ti-chevron-right muted" aria-hidden="true"></i></button>`).join('');
+  $$('#el-lista .mov').forEach(b => b.onclick = () => {
+    $('#app').classList.remove('eligiendo');
+    fijarEsp(b.dataset.id);
+    llenarEspSelects();
+    $('#c-esp').value = b.dataset.id;
+    llenarCCat();
+    abrirVista('inicio');
+  });
+  go('elegir');
 }
 
 /* ================= INICIO ================= */
 function talon(p){
   const [, m, d] = p.fecha_vto.split('-');
   const dias = diffDias(p.fecha_vto);
-  let cuando = dias < 0 ? `Venció hace ${-dias} día${dias === -1 ? '' : 's'}`
+  let cuando = dias < 0 ? `Venció hace ${-dias} ${plural(-dias, 'día', 'días')}`
              : dias === 0 ? 'Vence hoy' : dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
-  const c = cat(p.categoria_id);
-  const icono = c?.icono || p.icono || 'tag';
-  const delMes = p.vencido ? `${esc(p.nombre)} de ${MESES[Number(m)-1]}` : esc(p.nombre);
+  if (state.verTodos) cuando += ` (${esc(p.espacio)})`;
+  const titulo = p.vencido ? `${esc(p.nombre)} de ${MESES[Number(m)-1]}` : esc(p.nombre);
   return `<button class="vto ${p.vencido ? 'late' : ''}" data-cat="${p.categoria_id}" data-per="${p.periodo}">
     <span class="stub"><b class="num">${Number(d)}</b><small>${MESES[Number(m)-1].slice(0,3)}</small></span>
     <span class="vto-body">
-      <span class="ico"><i class="ti ti-${esc(icono)}" aria-hidden="true"></i></span>
-      <span class="vto-txt"><strong>${delMes}</strong><span>${cuando}</span></span>
+      <span class="ico"><i class="ti ti-${esc(p.icono || 'tag')}" aria-hidden="true"></i></span>
+      <span class="vto-txt"><strong>${titulo}</strong><span>${cuando}</span></span>
       <span class="vto-imp num">${Number(p.importe_estimado) > 0 ? fmt(p.importe_estimado) : '<span class="muted">—</span>'}</span>
     </span></button>`;
 }
@@ -438,21 +566,26 @@ function renderInicio(){
   $('#i-mes').textContent = cap(MESES[n.getMonth()]);
   $('#i-anio').textContent = n.getFullYear();
 
-  const venc = state.pend.filter(p => p.vencido);
-  const prox = state.pend.filter(p => !p.vencido);
-  const total = state.pend.reduce((a, p) => a + Number(p.importe_estimado || 0), 0);
+  const varios = espActivos().length > 1;
+  if (!varios) state.verTodos = false;
+  $('#i-todos').hidden = !varios;
+  $('#i-todos').classList.toggle('on', state.verTodos);
 
-  if (!state.cats.length) {
+  const pend = state.verTodos ? state.pend : state.pend.filter(p => p.espacio_id === state.esp);
+  const venc = pend.filter(p => p.vencido), prox = pend.filter(p => !p.vencido);
+  const total = pend.reduce((a, p) => a + Number(p.importe_estimado || 0), 0);
+
+  if (!state.verTodos && !catsDe(state.esp).length) {
     $('#i-resumen').textContent = '';
-    $('#i-vtos').innerHTML = `<div class="vacio"><p>Empezá creando tus categorías: los servicios y gastos fijos con su vencimiento, y las de gastos sueltos como supermercado.</p>
+    $('#i-vtos').innerHTML = `<div class="vacio" style="margin-top:12px"><p>Este espacio todavía no tiene categorías. Creá las de tus gastos fijos con su vencimiento, y las de gastos sueltos como supermercado.</p>
       <button class="btn primary" id="i-crear"><i class="ti ti-plus" aria-hidden="true"></i>Crear categoría</button></div>`;
     $('#i-crear').onclick = () => { go('categorias'); abrirCatForm(); };
-  } else if (!state.pend.length) {
+  } else if (!pend.length) {
     $('#i-resumen').textContent = 'Tenés todo pagado este mes.';
     $('#i-vtos').innerHTML = '';
   } else {
-    const cant = state.pend.length;
-    $('#i-resumen').innerHTML = `Te ${cant === 1 ? 'falta' : 'faltan'} pagar <b class="num">${cant}</b> vencimiento${cant === 1 ? '' : 's'}` +
+    const cant = pend.length;
+    $('#i-resumen').innerHTML = `Te ${plural(cant, 'falta', 'faltan')} pagar <b class="num">${cant}</b> ${plural(cant, 'vencimiento', 'vencimientos')}` +
       (total > 0 ? `, unos <b class="num">${fmt(total)}</b>.` : '.');
     let h = '';
     if (venc.length) h += `<h2 style="color:var(--danger)">Atrasados</h2><div class="lista">${venc.map(talon).join('')}</div>`;
@@ -465,25 +598,27 @@ function renderInicio(){
   }
   renderRecientes();
 }
+$('#i-todos').onclick = () => { state.verTodos = !state.verTodos; renderInicio(); };
 
 async function renderRecientes(){
   const box = $('#i-recientes');
-  const { data, error } = await sb.from('gastos').select('*, categorias(nombre, icono)')
+  let q = sb.from('gastos').select('*, categorias!inner(nombre, icono, espacio_id)')
     .order('fecha', { ascending:false }).order('created_at', { ascending:false }).limit(6);
+  if (!state.verTodos) q = q.eq('categorias.espacio_id', state.esp);
+  const { data, error } = await q;
   if (error) { box.innerHTML = `<p class="err">${esc(traducirError(error))}</p>`; return; }
   if (!data.length) { box.innerHTML = '<p class="muted">Todavía no cargaste gastos.</p>'; return; }
-  box.innerHTML = data.map(movHTML).join('');
-  $$('#i-recientes .mov').forEach(b => b.onclick = () => {
-    const g = data.find(x => x.id === b.dataset.id);
-    abrirCargar({ gasto: g, volver:'inicio' });
-  });
+  box.innerHTML = data.map(g => movHTML(g, state.verTodos)).join('');
+  $$('#i-recientes .mov').forEach(b => b.onclick = () => abrirCargar({ gasto: data.find(x => x.id === b.dataset.id), volver:'inicio' }));
 }
 
-function movHTML(g){
-  const detalle = [fmtFecha(g.fecha), MEDIOS[g.medio_pago], g.observacion].filter(Boolean).map(esc).join(', ');
+function movHTML(g, conEspacio){
+  const partes = [fmtFecha(g.fecha), MEDIOS[g.medio_pago]];
+  if (conEspacio) partes.push(espNombre(g.categorias?.espacio_id));
+  if (g.observacion) partes.push(g.observacion);
   return `<button class="mov" data-id="${g.id}">
     <span class="ico"><i class="ti ti-${esc(g.categorias?.icono || 'tag')}" aria-hidden="true"></i></span>
-    <span class="t"><strong>${esc(g.categorias?.nombre || '')}</strong><span>${detalle}</span></span>
+    <span class="t"><strong>${esc(g.categorias?.nombre || '')}</strong><span>${partes.filter(Boolean).map(esc).join(', ')}</span></span>
     <span class="imp num">${fmt(g.importe)}</span></button>`;
 }
 
@@ -491,21 +626,20 @@ function movHTML(g){
 $('#g-medios').innerHTML = Object.entries(MEDIOS).map(([k, v]) =>
   `<label><input type="radio" name="medio" value="${k}">${v}</label>`).join('');
 
-function llenarSelectsCat(incluirId){
-  const activas = state.cats.filter(c => c.activa || c.id === incluirId);
+function llenarGCat(incluirId){
+  const lista = catsDe(state.esp).filter(c => c.activa).map(c => ({ id:c.id, t:c.nombre }));
+  const extra = incluirId && cat(incluirId);
+  if (extra && !lista.some(x => x.id === extra.id))
+    lista.push({ id:extra.id, t: extra.espacio_id === state.esp ? extra.nombre : `${extra.nombre} (${espNombre(extra.espacio_id)})` });
   $('#g-cat').innerHTML = '<option value="">Elegí una categoría</option>' +
-    activas.map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
-  const prev = $('#c-cat').value;
-  $('#c-cat').innerHTML = '<option value="">Todas las categorías</option>' +
-    state.cats.map(c => `<option value="${c.id}">${esc(c.nombre)}${c.activa ? '' : ' (inactiva)'}</option>`).join('');
-  $('#c-cat').value = prev;
+    lista.map(x => `<option value="${x.id}">${esc(x.t)}</option>`).join('');
 }
 
 function abrirCargar(o = {}){
   const g = o.gasto || null;
   state.editGasto = g;
   state.volverA = o.volver || null;
-  llenarSelectsCat(g?.categoria_id);
+  llenarGCat(g?.categoria_id || o.categoria_id);
   showErr('#g-err', '');
   $('#g-titulo').textContent = g ? 'Editar gasto' : 'Cargar gasto';
   $('#g-ok').textContent = g ? 'Guardar cambios' : 'Guardar gasto';
@@ -603,6 +737,17 @@ $('#g-del').onclick = async () => {
 };
 
 /* ================= CONSULTAS ================= */
+function llenarCCat(){
+  const espId = $('#c-esp').value, prev = $('#c-cat').value;
+  const opt = c => `<option value="${c.id}">${esc(c.nombre)}${c.activa ? '' : ' (inactiva)'}</option>`;
+  let h = '<option value="">Todas las categorías</option>';
+  if (espId) h += catsDe(espId).map(opt).join('');
+  else h += state.espacios.filter(e => catsDe(e.id).length)
+    .map(e => `<optgroup label="${esc(e.nombre)}">${catsDe(e.id).map(opt).join('')}</optgroup>`).join('');
+  $('#c-cat').innerHTML = h;
+  $('#c-cat').value = [...$('#c-cat').options].some(o => o.value === prev) ? prev : '';
+}
+
 $$('input[name=c-modo]').forEach(r => r.onchange = () => {
   const mes = $('input[name=c-modo]:checked').value === 'mes';
   $('#c-mes-wrap').hidden = !mes;
@@ -611,6 +756,7 @@ $$('input[name=c-modo]').forEach(r => r.onchange = () => {
   buscar();
 });
 ['#c-mes', '#c-desde', '#c-hasta', '#c-cat'].forEach(s => $(s).onchange = buscar);
+$('#c-esp').onchange = () => { llenarCCat(); buscar(); };
 
 async function buscar(){
   let desde, hasta;
@@ -625,25 +771,36 @@ async function buscar(){
     if (desde > hasta) return showErr('#c-err', 'La fecha "desde" tiene que ser anterior a "hasta".');
   }
   showErr('#c-err', '');
-  const catId = $('#c-cat').value;
-  let q = sb.from('gastos').select('*, categorias(nombre, icono)')
+  const espId = $('#c-esp').value, catId = $('#c-cat').value;
+  let q = sb.from('gastos').select('*, categorias!inner(nombre, icono, espacio_id)')
     .gte('fecha', desde).lte('fecha', hasta)
     .order('fecha', { ascending:false }).order('created_at', { ascending:false });
   if (catId) q = q.eq('categoria_id', catId);
+  else if (espId) q = q.eq('categorias.espacio_id', espId);
   const { data, error } = await q;
   if (error) return showErr('#c-err', traducirError(error));
   state.res = data;
 
   const total = data.reduce((a, g) => a + Number(g.importe), 0);
-  let h = `<div class="totales"><span class="muted">${data.length} gasto${data.length === 1 ? '' : 's'}</span><strong class="num">${fmt(total)}</strong></div>`;
+  let h = `<div class="totales"><span class="muted">${data.length} ${plural(data.length, 'gasto', 'gastos')}</span><strong class="num">${fmt(total)}</strong></div>`;
   if (!data.length) h += '<p class="muted">No hay gastos en ese período.</p>';
+
   if (!catId && data.length) {
-    const sub = {};
-    data.forEach(g => { const k = g.categorias?.nombre || ''; sub[k] = (sub[k] || 0) + Number(g.importe); });
-    h += '<h2>Por categoría</h2>' + Object.entries(sub).sort((a, b) => b[1] - a[1])
-      .map(([k, v]) => `<div class="sub"><span>${esc(k)}</span><span class="num">${fmt(v)}</span></div>`).join('');
+    const sumar = lista => { const r = {}; lista.forEach(g => { const k = g.categorias.nombre; r[k] = (r[k] || 0) + Number(g.importe); }); return Object.entries(r).sort((a, b) => b[1] - a[1]); };
+    if (espId) {
+      h += '<h2>Por categoría</h2>' + sumar(data).map(([k, v]) => `<div class="sub"><span>${esc(k)}</span><span class="num">${fmt(v)}</span></div>`).join('');
+    } else {
+      const porEsp = {};
+      data.forEach(g => (porEsp[g.categorias.espacio_id] ||= []).push(g));
+      h += '<h2>Por espacio y categoría</h2>' + Object.entries(porEsp)
+        .map(([id, l]) => [id, l, l.reduce((a, g) => a + Number(g.importe), 0)])
+        .sort((a, b) => b[2] - a[2])
+        .map(([id, l, t]) => `<div class="sub grupo"><span>${esc(espNombre(id))}</span><span class="num">${fmt(t)}</span></div>` +
+          sumar(l).map(([k, v]) => `<div class="sub hijo"><span>${esc(k)}</span><span class="num">${fmt(v)}</span></div>`).join(''))
+        .join('');
+    }
   }
-  if (data.length) h += '<h2>Detalle</h2>' + data.map(movHTML).join('');
+  if (data.length) h += '<h2>Detalle</h2>' + data.map(g => movHTML(g, !espId)).join('');
   $('#c-res').innerHTML = h;
   $$('#c-res .mov').forEach(b => b.onclick = () => abrirCargar({ gasto: state.res.find(x => x.id === b.dataset.id), volver:'consultas' }));
 }
@@ -675,9 +832,10 @@ function describir(c){
 }
 
 function renderCats(){
-  const lista = [...state.cats].sort((a, b) => (b.activa - a.activa) || a.nombre.localeCompare(b.nombre));
-  if (!lista.length) { $('#k-lista').innerHTML = '<div class="vacio"><p>Todavía no tenés categorías. Creá la primera con el botón Nueva.</p></div>'; return; }
-  $('#k-lista').innerHTML = lista.map(c => `<button class="mov cat-row ${c.activa ? '' : 'off'}" data-id="${c.id}">
+  $('#k-intro').textContent = `Del espacio ${espNombre(state.esp)}.`;
+  const lista = [...catsDe(state.esp)].sort((a, b) => (b.activa - a.activa) || a.nombre.localeCompare(b.nombre));
+  if (!lista.length) { $('#k-lista').innerHTML = '<div class="vacio"><p>Este espacio todavía no tiene categorías. Creá la primera con el botón Nueva.</p></div>'; return; }
+  $('#k-lista').innerHTML = lista.map(c => `<button class="mov ${c.activa ? '' : 'off'}" data-id="${c.id}">
     <span class="ico"><i class="ti ti-${esc(c.icono)}" aria-hidden="true"></i></span>
     <span class="t"><strong>${esc(c.nombre)}${c.activa ? '' : ' (inactiva)'}</strong><span>${esc(describir(c))}</span></span>
     <i class="ti ti-chevron-right muted" aria-hidden="true"></i></button>`).join('');
@@ -687,7 +845,7 @@ function renderCats(){
 function abrirCatForm(c = null){
   state.editCat = c;
   showErr('#k-err', '');
-  $('#k-titulo').textContent = c ? 'Editar categoría' : 'Nueva categoría';
+  $('#k-titulo').textContent = c ? 'Editar categoría' : `Nueva categoría en ${espNombre(state.esp)}`;
   $('#k-nombre').value = c?.nombre || '';
   state.icono = c?.icono || 'tag'; marcarIcono();
   $('#k-fija').checked = !!c?.es_fija;
@@ -712,6 +870,7 @@ function cerrarCatForm(){
 }
 $('#k-nueva').onclick = () => abrirCatForm();
 $('#k-cancel').onclick = cerrarCatForm;
+$('#k-espacios').onclick = () => abrirVista('espacios');
 
 $('#k-form').onsubmit = async ev => {
   ev.preventDefault();
@@ -720,6 +879,7 @@ $('#k-form').onsubmit = async ev => {
   if (!nombre) return showErr('#k-err', 'Ingresá un nombre.');
   const datos = { nombre, icono: state.icono, es_fija, activa: $('#k-activa').checked,
     cada_meses:null, mes_inicio:null, dia_vto:null, importe_estimado:0 };
+  if (!state.editCat) datos.espacio_id = state.esp;
   if (es_fija) {
     const cada = Number($('#k-cada').value), dia = Number($('#k-dia').value);
     const est = $('#k-est').value.trim() ? parseImporte($('#k-est').value) : 0;
@@ -751,6 +911,91 @@ $('#k-del').onclick = async () => {
   toast('Categoría eliminada');
   await refrescar();
   cerrarCatForm();
+};
+
+/* ================= ESPACIOS ================= */
+function renderEspacios(){
+  const lista = [...state.espacios].sort((a, b) => (b.activo - a.activo) || a.nombre.localeCompare(b.nombre));
+  $('#e-lista').innerHTML = lista.map(e => {
+    const n = catsDe(e.id).length;
+    let sub = `${n} ${plural(n, 'categoría', 'categorías')}`;
+    if (e.id === state.esp) sub += ', en uso ahora';
+    return `<button class="mov ${e.activo ? '' : 'off'}" data-id="${e.id}">
+      <span class="ico"><i class="ti ti-layout-grid" aria-hidden="true"></i></span>
+      <span class="t"><strong>${esc(e.nombre)}${e.activo ? '' : ' (inactivo)'}</strong><span>${sub}</span></span>
+      <i class="ti ti-chevron-right muted" aria-hidden="true"></i></button>`;
+  }).join('');
+  $$('#e-lista .mov').forEach(b => b.onclick = () => abrirEspForm(espacio(b.dataset.id)));
+}
+
+function abrirEspForm(e = null){
+  state.editEsp = e;
+  showErr('#e-err', '');
+  $('#e-titulo').textContent = e ? 'Editar espacio' : 'Nuevo espacio';
+  $('#e-nombre').value = e?.nombre || '';
+  $('#e-copiar-wrap').hidden = !!e;
+  $('#e-copiar').innerHTML = '<option value="">No copiar, empezar vacío</option>' +
+    state.espacios.filter(x => catsDe(x.id).length).map(x => `<option value="${x.id}">${esc(x.nombre)}</option>`).join('');
+  $('#e-activo').checked = e ? e.activo : true;
+  $('#e-activo-wrap').hidden = !e;
+  $('#e-del').hidden = !e;
+  $('#e-lista-wrap').hidden = true;
+  $('#e-form').hidden = false;
+  window.scrollTo(0, 0);
+}
+function cerrarEspForm(){
+  $('#e-form').hidden = true;
+  $('#e-lista-wrap').hidden = false;
+  renderEspacios();
+}
+$('#e-nuevo').onclick = () => abrirEspForm();
+$('#e-cancel').onclick = cerrarEspForm;
+
+$('#e-form').onsubmit = async ev => {
+  ev.preventDefault();
+  const nombre = $('#e-nombre').value.trim();
+  if (!nombre) return showErr('#e-err', 'Ingresá un nombre.');
+  const e = state.editEsp;
+  const activo = $('#e-activo').checked;
+  if (e && e.activo && !activo && espActivos().length === 1)
+    return showErr('#e-err', 'Tiene que quedar al menos un espacio activo.');
+  showErr('#e-err', ''); $('#e-ok').disabled = true;
+  try {
+    if (e) {
+      const { error } = await sb.from('espacios').update({ nombre, activo }).eq('id', e.id);
+      if (error) throw error;
+    } else {
+      const { data: nuevo, error } = await sb.from('espacios').insert({ nombre }).select().single();
+      if (error) throw error;
+      const origen = $('#e-copiar').value;
+      if (origen) {
+        const filas = catsDe(origen).map(c => ({
+          espacio_id: nuevo.id, nombre: c.nombre, icono: c.icono, es_fija: c.es_fija,
+          cada_meses: c.cada_meses, mes_inicio: c.mes_inicio, dia_vto: c.dia_vto,
+          importe_estimado: c.importe_estimado, vigente_desde: hoy(), activa: c.activa }));
+        if (filas.length) {
+          const { error: e2 } = await sb.from('categorias').insert(filas);
+          if (e2) throw e2;
+        }
+      }
+    }
+    toast('Espacio guardado');
+    await refrescar();
+    cerrarEspForm();
+  } catch (err) { showErr('#e-err', traducirError(err, 'espacio')); }
+  $('#e-ok').disabled = false;
+};
+
+$('#e-del').onclick = async () => {
+  const e = state.editEsp;
+  if (!e) return;
+  if (e.activo && espActivos().length === 1) return showErr('#e-err', 'Tiene que quedar al menos un espacio activo.');
+  if (!confirm(`¿Eliminar el espacio ${e.nombre}?`)) return;
+  const { error } = await sb.from('espacios').delete().eq('id', e.id);
+  if (error) return showErr('#e-err', traducirError(error, 'espacio'));
+  toast('Espacio eliminado');
+  await refrescar();
+  cerrarEspForm();
 };
 
 /* ================= ARRANQUE ================= */
