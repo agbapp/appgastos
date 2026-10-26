@@ -43,13 +43,13 @@
 :root[data-theme="dark"]{
   color-scheme: dark;
   --bg:#1A1914; --surface:#24221B; --zebra:#2A2820; --ink:#ECE6D2; --title:#9CC3D6; --muted:#A39E86;
-  --line:#3A372C; --accent:#4DBA8A; --accent-ink:#14130F; --accent-soft:#1F3A2E; --danger:#F08A78; --danger-soft:#45441C;
+  --line:#3A372C; --accent:#4DBA8A; --accent-ink:#14130F; --accent-soft:#1F3A2E; --danger:#E9B949; --danger-soft:#3D3416;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme: dark;
     --bg:#1A1914; --surface:#24221B; --zebra:#2A2820; --ink:#ECE6D2; --title:#9CC3D6; --muted:#A39E86;
-    --line:#3A372C; --accent:#4DBA8A; --accent-ink:#14130F; --accent-soft:#1F3A2E; --danger:#F08A78; --danger-soft:#45441C;
+    --line:#3A372C; --accent:#4DBA8A; --accent-ink:#14130F; --accent-soft:#1F3A2E; --danger:#E9B949; --danger-soft:#3D3416;
   }
 }
 *{box-sizing:border-box}
@@ -217,6 +217,31 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
 .toast{position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:11px 18px; border-radius:10px; font-size:15px; z-index:50; max-width:calc(100% - 32px)}
 @media (min-width:900px){ .toast{bottom:28px; left:calc(50% + 110px)} }
 @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+
+/* ---------- impresión / PDF ---------- */
+.print-only{display:none}
+@media print{
+  :root, :root[data-theme="dark"], :root:not([data-theme="light"]){
+    color-scheme: light;
+    --bg:#FFFFFF; --surface:#FFFFFF; --zebra:#F3F1EA; --ink:#1F2A24; --title:#1B475D; --muted:#5E5B4A;
+    --line:#D5D0C0; --accent:#1E7A55; --danger:#B4382A; --danger-soft:#F3E9C6;
+  }
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{background:#fff}
+  .tabs, .esp-bar, .toast, .sheet, .no-print, #v-consultas > h1, #v-consultas > .chips, .filtros{display:none !important}
+  .print-only{display:block !important}
+  main{margin:0 !important; padding:0 !important; max-width:none}
+  #print-head h1{margin:0 0 4px}
+  #print-head p{margin:0 0 12px; color:var(--muted); font-size:13px}
+  .totales{margin-top:0}
+  .mov{grid-template-columns:26px 1fr auto; padding:5px 8px; break-inside:avoid}
+  .mov .ico{width:22px; height:22px; font-size:13px; border-radius:6px}
+  .mov .t span{white-space:normal}
+  .sub{padding-top:5px; padding-bottom:5px; break-inside:avoid}
+  .graf{break-inside:avoid}
+  .graf-ctrl{display:none !important}
+  @page{margin:14mm}
+}
 </style>
 </head>
 <body>
@@ -305,6 +330,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
 
     <!-- ---------- CONSULTAS ---------- -->
     <section class="view" id="v-consultas" hidden>
+      <div class="print-only" id="print-head"></div>
       <h1>Consultas</h1>
       <div class="chips" style="margin-bottom:14px; align-items:center">
         <label><input type="radio" name="c-modo" value="mes" checked>Por mes</label>
@@ -318,6 +344,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
         <div><span class="f">Espacios</span><button type="button" class="msel" data-f="esp"></button></div>
         <div><span class="f">Grupos</span><button type="button" class="msel" data-f="grupo"></button></div>
         <div><span class="f">Categorías</span><button type="button" class="msel" data-f="cat"></button></div>
+      </div>
+      <div class="row-btns no-print" style="margin-top:14px">
+        <button type="button" class="btn" id="c-pdf"><i class="ti ti-file-type-pdf" aria-hidden="true"></i>PDF</button>
+        <button type="button" class="btn" id="c-csv"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i>CSV (Excel)</button>
       </div>
       <p class="err" id="c-err" hidden></p>
       <div id="c-tot"></div>
@@ -358,18 +388,38 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
         <div class="field"><label class="switch">Tiene vencimiento (gasto fijo)<input type="checkbox" id="k-fija"></label></div>
         <div class="fija-campos" id="k-fija-campos" hidden>
           <div class="field">
-            <label class="f" for="k-cada">Se repite cada (meses)</label>
-            <div class="chips" id="k-cada-chips" style="margin-bottom:8px"></div>
-            <input type="number" id="k-cada" min="1" max="24" value="1" class="num">
+            <span class="f">Cómo vence</span>
+            <div class="chips">
+              <label><input type="radio" name="k-modo" value="cada">Cada tantos meses</label>
+              <label><input type="radio" name="k-modo" value="meses">Meses específicos</label>
+              <label><input type="radio" name="k-modo" value="cuotas">En cuotas</label>
+            </div>
           </div>
-          <div class="dos">
+          <div id="k-modo-cada">
+            <div class="field">
+              <label class="f" for="k-cada">Se repite cada (meses)</label>
+              <div class="chips" id="k-cada-chips" style="margin-bottom:8px"></div>
+              <input type="number" id="k-cada" min="1" max="24" value="1" class="num">
+            </div>
             <div class="field" id="k-mes-wrap"><label class="f" for="k-mes">Primer mes</label><select id="k-mes"></select></div>
-            <div class="field"><label class="f" for="k-dia">Día de vencimiento</label><input type="number" id="k-dia" min="1" max="31" class="num" placeholder="10"></div>
+          </div>
+          <div class="field" id="k-modo-meses" hidden>
+            <span class="f">Meses en que vence (se repite todos los años)</span>
+            <div class="chips" id="k-meses"></div>
+            <div style="margin-top:10px; display:flex; gap:16px">
+              <button type="button" class="link" id="k-meses-todos">Marcar todos</button>
+              <button type="button" class="link" id="k-meses-ninguno">Ninguno</button>
+            </div>
+          </div>
+          <div class="dos" id="k-modo-cuotas" hidden>
+            <div class="field"><label class="f" for="k-ncuotas">Cantidad de cuotas</label><input type="number" id="k-ncuotas" min="1" max="120" class="num" placeholder="12"></div>
+            <div class="field"><label class="f" for="k-cuota1">Primera cuota</label><input type="month" id="k-cuota1"></div>
           </div>
           <div class="dos">
+            <div class="field"><label class="f" for="k-dia">Día de vencimiento</label><input type="number" id="k-dia" min="1" max="31" class="num" placeholder="10"></div>
             <div class="field"><label class="f" for="k-est" id="k-est-lbl">Importe estimado</label><input type="text" inputmode="decimal" id="k-est" class="num" placeholder="0"></div>
-            <div class="field"><label class="f" for="k-desde">Contar desde</label><input type="date" id="k-desde"></div>
           </div>
+          <div class="field" id="k-desde-wrap"><label class="f" for="k-desde">Contar desde</label><input type="date" id="k-desde"></div>
         </div>
         <div class="field" id="k-activa-wrap" hidden><label class="switch">Activa<input type="checkbox" id="k-activa"></label></div>
         <p class="err" id="k-err" hidden></p>
@@ -435,6 +485,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent); outline:none
       <p class="muted" style="font-size:14px; margin:8px 0 0">Automático sigue la configuración del celu o la compu. Se guarda en cada dispositivo.</p>
       <h2>Espacios</h2>
       <button class="btn" id="aj-espacios"><i class="ti ti-layout-grid" aria-hidden="true"></i>Administrar espacios</button>
+      <h2>Copia de seguridad</h2>
+      <p class="muted" style="font-size:14px; margin:0 0 10px">Descarga un archivo con todos tus espacios, grupos, categorías y gastos. Guardalo en un lugar seguro, por ejemplo en Google Drive.</p>
+      <div class="row-btns" style="margin:0">
+        <button type="button" class="btn primary" id="aj-backup"><i class="ti ti-download" aria-hidden="true"></i>Descargar copia</button>
+        <label class="btn" for="aj-restore-file" style="cursor:pointer"><i class="ti ti-upload" aria-hidden="true"></i>Restaurar copia</label>
+        <input type="file" id="aj-restore-file" accept=".json,application/json" hidden>
+      </div>
+      <p class="muted" id="aj-backup-info" style="font-size:13px; margin:8px 0 0"></p>
       <h2>Cuenta</h2>
       <p class="muted" id="aj-mail" style="margin:0 0 10px"></p>
       <button class="btn" id="btn-salir"><i class="ti ti-logout" aria-hidden="true"></i>Salir</button>
@@ -606,7 +664,7 @@ function abrirVista(v){
   else if (v === 'categorias') { go(v); cerrarCatForms(); }
   else if (v === 'espacios') { go(v); cerrarEspForm(); }
   else if (v === 'consultas') { go(v); buscar(); }
-  else if (v === 'ajustes') { go(v); $('#aj-mail').textContent = state.user?.email || ''; }
+  else if (v === 'ajustes') { go(v); $('#aj-mail').textContent = state.user?.email || ''; mostrarUltimaCopia(); }
   else { go('inicio'); renderInicio(); }
 }
 $$('.tabs button[data-view]').forEach(b => b.onclick = () => abrirVista(b.dataset.view));
@@ -716,7 +774,8 @@ function talon(p){
   let cuando = dias < 0 ? `Venció hace ${-dias} ${plural(-dias, 'día', 'días')}`
              : dias === 0 ? 'Vence hoy' : dias === 1 ? 'Vence mañana' : `Vence en ${dias} días`;
   if (state.verTodos) cuando += ` (${esc(p.espacio)})`;
-  const titulo = p.vencido ? `${esc(p.nombre)} de ${MESES[Number(m)-1]}` : esc(p.nombre);
+  const titulo = p.cuota ? `${esc(p.nombre)}, cuota ${p.cuota} de ${p.cuotas_total}`
+    : p.vencido ? `${esc(p.nombre)} de ${MESES[Number(m)-1]}` : esc(p.nombre);
   return `<button class="vto ${p.vencido ? 'late' : ''}" data-cat="${p.categoria_id}" data-per="${p.periodo}">
     <span class="stub"><b class="num">${Number(d)}</b><small>${MESES[Number(m)-1].slice(0,3)}</small></span>
     <span class="vto-body">
@@ -843,7 +902,7 @@ async function alCambiarCat(o = {}){
   wrap.hidden = false;
 
   const pend = state.pend.filter(p => p.categoria_id === c.id).sort((a, b) => a.periodo.localeCompare(b.periodo));
-  const opts = pend.map(p => ({ v:p.periodo, t:`${fmtPer(p.periodo)} (vence ${fmtFecha(p.fecha_vto)})` }));
+  const opts = pend.map(p => ({ v:p.periodo, t:`${p.cuota ? `Cuota ${p.cuota} de ${p.cuotas_total}, ` : ''}${fmtPer(p.periodo)} (vence ${fmtFecha(p.fecha_vto)})` }));
   if (o.periodo && !opts.some(x => x.v === o.periodo)) opts.unshift({ v:o.periodo, t:fmtPer(o.periodo) });
   opts.push({ v:'__otro', t:'Otro mes…' }, { v:'', t:'No corresponde a un vencimiento' });
   $('#g-per').innerHTML = opts.map(x => `<option value="${x.v}">${esc(x.t)}</option>`).join('');
@@ -1044,13 +1103,14 @@ async function buscar(){
   const ids = catsFiltradas();
   let data = [];
   if (!ids || ids.length) {
-    let q = sb.from('gastos').select(SEL_GASTOS)
-      .gte('fecha', desde).lte('fecha', hasta)
-      .order('fecha', { ascending:false }).order('created_at', { ascending:false });
-    if (ids) q = q.in('categoria_id', ids);
-    const r = await q;
-    if (r.error) return showErr('#c-err', traducirError(r.error));
-    data = r.data;
+    try {
+      data = await traerTodo(() => {
+        const q = sb.from('gastos').select(SEL_GASTOS)
+          .gte('fecha', desde).lte('fecha', hasta)
+          .order('fecha', { ascending:false }).order('created_at', { ascending:false }).order('id');
+        return ids ? q.in('categoria_id', ids) : q;
+      });
+    } catch (e) { return showErr('#c-err', traducirError(e)); }
   }
   state.res = data;
 
@@ -1073,6 +1133,7 @@ async function buscar(){
     h += `<h2>Detalle</h2><div class="filas">${data.map(g => movHTML(g, variosEsp)).join('')}</div>`;
   }
   $('#c-res').innerHTML = h;
+  $('#c-pdf').disabled = $('#c-csv').disabled = !data.length;
   $$('#c-res .mov').forEach(b => b.onclick = () => abrirCargar({ gasto: state.res.find(x => x.id === b.dataset.id), volver:'consultas' }));
   renderGrafico();
 }
@@ -1206,10 +1267,41 @@ $$('#k-cada-chips button').forEach(b => b.onclick = () => { $('#k-cada').value =
 $('#k-cada').oninput = actualizarCada;
 $('#k-fija').onchange = () => $('#k-fija-campos').hidden = !$('#k-fija').checked;
 
+$('#k-meses').innerHTML = MESES.map((m, i) => `<label><input type="checkbox" value="${i + 1}">${cap(m.slice(0, 3))}</label>`).join('');
+$('#k-meses-todos').onclick = () => $$('#k-meses input').forEach(x => x.checked = true);
+$('#k-meses-ninguno').onclick = () => $$('#k-meses input').forEach(x => x.checked = false);
+function actualizarModo(){
+  const modo = $('input[name=k-modo]:checked')?.value || 'cada';
+  $('#k-modo-cada').hidden = modo !== 'cada';
+  $('#k-modo-meses').hidden = modo !== 'meses';
+  $('#k-modo-cuotas').hidden = modo !== 'cuotas';
+  $('#k-desde-wrap').hidden = modo === 'cuotas';
+  $('#k-est-lbl').textContent = labelImporte(modo === 'cuotas' ? 'Importe de cada cuota' : 'Importe estimado', state.kEsp);
+}
+$$('input[name=k-modo]').forEach(r => r.onchange = actualizarModo);
+
+const perMin = s => { const [y, m] = s.split('-').map(Number); return `${MESES[m - 1]} ${y}`; };
+function textoMeses(ms){
+  const l = [...ms].map(Number).sort((a, b) => a - b);
+  if (l.length === 12) return 'todos los meses';
+  if (l.length > 2 && l.every((m, i) => !i || m === l[i - 1] + 1)) return `de ${MESES[l[0] - 1]} a ${MESES[l[l.length - 1] - 1]}`;
+  return 'en ' + l.map(m => MESES[m - 1].slice(0, 3)).join(', ');
+}
+function ultimaCuota(c){
+  const [y, m] = c.vigente_desde.split('-').map(Number);
+  const t = y * 12 + (m - 1) + c.cuotas_total - 1;
+  return `${Math.floor(t / 12)}-${pad(t % 12 + 1)}-01`;
+}
 function describir(c){
   if (!c.es_fija) return 'Sin vencimiento';
-  let t = c.cada_meses === 1 ? `Todos los meses, día ${c.dia_vto}`
-        : `Cada ${c.cada_meses} meses desde ${MESES[c.mes_inicio-1]}, día ${c.dia_vto}`;
+  let t;
+  if (c.modo_vto === 'meses') t = `Vence ${textoMeses(c.meses || [])}, día ${c.dia_vto}`;
+  else if (c.modo_vto === 'cuotas') {
+    const fin = ultimaCuota(c);
+    t = `${c.cuotas_total} ${plural(c.cuotas_total, 'cuota', 'cuotas')}, de ${perMin(c.vigente_desde)} a ${perMin(fin)}, día ${c.dia_vto}`;
+    if (fin.slice(0, 7) < hoy().slice(0, 7) && !state.pend.some(p => p.categoria_id === c.id)) t += ' (terminada)';
+  } else t = c.cada_meses === 1 ? `Todos los meses, día ${c.dia_vto}`
+        : `Cada ${c.cada_meses} meses desde ${MESES[c.mes_inicio - 1]}, día ${c.dia_vto}`;
   if (Number(c.importe_estimado) > 0) t += `, ${fmt(c.importe_estimado, monedaDe(c.espacio_id))}`;
   return t;
 }
@@ -1258,7 +1350,7 @@ function abrirCatForm(c = null){
   $('#k-titulo').textContent = c ? 'Editar categoría' : `Nueva categoría en ${espNombre(state.esp)}`;
   $('#k-nombre').value = c?.nombre || '';
   const espId = c?.espacio_id || state.esp;
-  $('#k-est-lbl').textContent = labelImporte('Importe estimado', espId);
+  state.kEsp = espId;
   $('#k-grupo').innerHTML = '<option value="">Sin grupo</option>' +
     gruposDe(espId).map(g => `<option value="${g.id}">${esc(g.nombre)}</option>`).join('');
   $('#k-grupo').value = c?.grupo_id || '';
@@ -1271,10 +1363,17 @@ function abrirCatForm(c = null){
   $('#k-dia').value = c?.dia_vto || '';
   $('#k-est').value = c && Number(c.importe_estimado) > 0 ? importeTxt(c.importe_estimado) : '';
   $('#k-desde').value = c?.vigente_desde || hoy();
+  const modo = c?.modo_vto || 'cada';
+  $$('input[name=k-modo]').forEach(r => r.checked = r.value === modo);
+  const ms = (c?.meses || []).map(Number);
+  $$('#k-meses input').forEach(x => x.checked = ms.includes(Number(x.value)));
+  $('#k-ncuotas').value = c?.cuotas_total || '';
+  $('#k-cuota1').value = modo === 'cuotas' && c?.vigente_desde ? c.vigente_desde.slice(0, 7) : hoy().slice(0, 7);
   $('#k-activa').checked = c ? c.activa : true;
   $('#k-activa-wrap').hidden = !c;
   $('#k-del').hidden = !c;
   actualizarCada();
+  actualizarModo();
   actualizarPrevK();
   mostrarSolo('#k-form');
 }
@@ -1292,17 +1391,34 @@ $('#k-form').onsubmit = async ev => {
   const es_fija = $('#k-fija').checked;
   if (!nombre) return showErr('#k-err', 'Ingresá un nombre.');
   const datos = { nombre, icono: state.kIcono, color: state.kColor, grupo_id: $('#k-grupo').value || null,
-    es_fija, activa: $('#k-activa').checked, cada_meses:null, mes_inicio:null, dia_vto:null, importe_estimado:0 };
+    es_fija, activa: $('#k-activa').checked, cada_meses:null, mes_inicio:null, dia_vto:null, importe_estimado:0,
+    modo_vto:'cada', meses:null, cuotas_total:null };
   if (!state.editCat) datos.espacio_id = state.esp;
   if (es_fija) {
-    const cada = Number($('#k-cada').value), dia = Number($('#k-dia').value);
+    const modo = $('input[name=k-modo]:checked')?.value || 'cada';
+    const dia = Number($('#k-dia').value);
     const est = $('#k-est').value.trim() ? parseImporte($('#k-est').value) : 0;
-    if (!(cada >= 1 && cada <= 24)) return showErr('#k-err', 'La repetición tiene que ser entre 1 y 24 meses.');
     if (!(dia >= 1 && dia <= 31)) return showErr('#k-err', 'El día de vencimiento tiene que ser entre 1 y 31.');
-    if (!(est >= 0)) return showErr('#k-err', 'El importe estimado no es válido.');
-    if (!$('#k-desde').value) return showErr('#k-err', 'Ingresá desde cuándo contar los vencimientos.');
-    Object.assign(datos, { cada_meses:cada, mes_inicio: cada === 1 ? 1 : Number($('#k-mes').value),
-      dia_vto:dia, importe_estimado:est, vigente_desde:$('#k-desde').value });
+    if (!(est >= 0)) return showErr('#k-err', 'El importe no es válido.');
+    Object.assign(datos, { modo_vto: modo, dia_vto: dia, importe_estimado: est });
+    if (modo === 'cuotas') {
+      const n = Number($('#k-ncuotas').value);
+      if (!(n >= 1 && n <= 120)) return showErr('#k-err', 'La cantidad de cuotas tiene que ser entre 1 y 120.');
+      if (!$('#k-cuota1').value) return showErr('#k-err', 'Elegí el mes de la primera cuota.');
+      Object.assign(datos, { cuotas_total: n, vigente_desde: $('#k-cuota1').value + '-01' });
+    } else {
+      if (!$('#k-desde').value) return showErr('#k-err', 'Ingresá desde cuándo contar los vencimientos.');
+      datos.vigente_desde = $('#k-desde').value;
+      if (modo === 'meses') {
+        const meses = $$('#k-meses input:checked').map(x => Number(x.value));
+        if (!meses.length) return showErr('#k-err', 'Marcá al menos un mes.');
+        datos.meses = meses;
+      } else {
+        const cada = Number($('#k-cada').value);
+        if (!(cada >= 1 && cada <= 24)) return showErr('#k-err', 'La repetición tiene que ser entre 1 y 24 meses.');
+        Object.assign(datos, { cada_meses: cada, mes_inicio: cada === 1 ? 1 : Number($('#k-mes').value) });
+      }
+    }
   }
   showErr('#k-err', ''); $('#k-ok').disabled = true;
   try {
@@ -1429,7 +1545,8 @@ async function copiarContenido(origen, destino){
     espacio_id: destino, grupo_id: c.grupo_id ? mapa[c.grupo_id] : null,
     nombre: c.nombre, icono: c.icono, color: c.color, es_fija: c.es_fija,
     cada_meses: c.cada_meses, mes_inicio: c.mes_inicio, dia_vto: c.dia_vto,
-    importe_estimado: c.importe_estimado, vigente_desde: hoy(), activa: c.activa }));
+    modo_vto: c.modo_vto, meses: c.meses, cuotas_total: c.cuotas_total,
+    importe_estimado: c.importe_estimado, vigente_desde: c.modo_vto === 'cuotas' ? c.vigente_desde : hoy(), activa: c.activa }));
   if (filas.length) {
     const { error } = await sb.from('categorias').insert(filas);
     if (error) throw error;
@@ -1472,6 +1589,129 @@ $('#e-del').onclick = async () => {
   toast('Espacio eliminado');
   await refrescar();
   cerrarEspForm();
+};
+
+/* ================= EXPORTAR Y COPIA DE SEGURIDAD ================= */
+function descargar(nombre, contenido, tipo){
+  const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+  const a = document.createElement('a');
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* trae todas las filas, de a 1000 (límite de Supabase por consulta) */
+async function traerTodo(armar){
+  const todo = [];
+  for (let desde = 0; ; desde += 1000) {
+    const { data, error } = await armar().range(desde, desde + 999);
+    if (error) throw error;
+    todo.push(...data);
+    if (data.length < 1000) return todo;
+  }
+}
+
+function exportarCSV(){
+  if (!state.res.length) return toast('No hay gastos para exportar.');
+  const comillas = v => { const s = String(v ?? ''); return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const enc = ['Fecha', 'Espacio', 'Grupo', 'Categoría', 'Medio de pago', 'Observación', 'Importe', 'Moneda', 'Vencimiento de'];
+  const filas = state.res.map(g => {
+    const c = g.categorias, gr = c.grupo_id && grupo(c.grupo_id);
+    return [fmtFecha(g.fecha), espNombre(c.espacio_id), gr ? gr.nombre : '', c.nombre,
+      MEDIOS[g.medio_pago] || g.medio_pago, g.observacion || '', String(g.importe).replace('.', ','),
+      monedaDe(c.espacio_id), g.periodo ? fmtPer(g.periodo) : ''];
+  });
+  // punto y coma y coma decimal: así lo abre bien Excel en español
+  const csv = '\ufeff' + [enc, ...filas].map(f => f.map(comillas).join(';')).join('\r\n');
+  descargar(`gastos_${state.rango.desde}_a_${state.rango.hasta}.csv`, csv, 'text/csv;charset=utf-8');
+}
+
+function exportarPDF(){
+  if (!state.res.length) return toast('No hay gastos para exportar.');
+  const r = state.rango;
+  const filtros = ['esp', 'grupo', 'cat'].map(etiquetaFiltro).join(', ');
+  $('#print-head').innerHTML = `<h1>Mis gastos</h1>
+    <p>Período: ${fmtFecha(r.desde)} al ${fmtFecha(r.hasta)}<br>Filtros: ${esc(filtros)}<br>Generado el ${fmtFecha(hoy())}</p>`;
+  const titulo = document.title;
+  document.title = `Gastos ${r.desde} a ${r.hasta}`;
+  window.print();
+  setTimeout(() => document.title = titulo, 1000);
+}
+$('#c-csv').onclick = exportarCSV;
+$('#c-pdf').onclick = exportarPDF;
+
+const TABLAS = ['espacios', 'grupos', 'categorias', 'gastos'];
+
+function mostrarUltimaCopia(){
+  const f = localStorage.getItem('ultimaCopia');
+  $('#aj-backup-info').textContent = f ? `Última copia descargada en este dispositivo: ${fmtFecha(f)}.` : 'Todavía no descargaste ninguna copia en este dispositivo.';
+}
+
+$('#aj-backup').onclick = async () => {
+  const btn = $('#aj-backup'); btn.disabled = true;
+  try {
+    const copia = { app: 'Mis gastos', version: 1, fecha: new Date().toISOString(), usuario: state.user?.email || '' };
+    for (const t of TABLAS) copia[t] = await traerTodo(() => sb.from(t).select('*').order('id'));
+    descargar(`copia_mis_gastos_${hoy()}.json`, JSON.stringify(copia, null, 1), 'application/json');
+    localStorage.setItem('ultimaCopia', hoy());
+    mostrarUltimaCopia();
+    toast(`Copia descargada: ${copia.gastos.length} ${plural(copia.gastos.length, 'gasto', 'gastos')}`);
+  } catch (e) { toast(traducirError(e)); }
+  btn.disabled = false;
+};
+
+/* Restaurar: recupera lo que falte y actualiza lo que exista. No borra nada.
+   Si en la cuenta ya hay un espacio, grupo o categoría con el mismo nombre,
+   se usa ese en lugar de duplicarlo. */
+$('#aj-restore-file').onchange = async ev => {
+  const archivo = ev.target.files[0];
+  ev.target.value = '';
+  if (!archivo) return;
+  let copia;
+  try {
+    copia = JSON.parse(await archivo.text());
+    if (copia.app !== 'Mis gastos' || !TABLAS.every(t => Array.isArray(copia[t]))) throw new Error();
+  } catch { return toast('Ese archivo no es una copia de Mis gastos.'); }
+
+  const fecha = copia.fecha ? fmtFecha(copia.fecha.slice(0, 10)) : 'fecha desconocida';
+  if (!confirm(`Copia del ${fecha}: ${copia.espacios.length} espacios, ${copia.categorias.length} categorías y ${copia.gastos.length} gastos.\n\n` +
+    'Se van a recuperar los datos que falten y actualizar los que ya existan. No se borra nada.\n\n¿Continuar?')) return;
+
+  const uid = state.user.id;
+  const mapE = {}, mapG = {}, mapC = {};
+  const esp = copia.espacios.filter(e => {
+    if (espacio(e.id)) return true;
+    const igual = state.espacios.find(x => x.nombre === e.nombre);
+    if (igual) { mapE[e.id] = igual.id; return false; }
+    return true;
+  });
+  const grs = copia.grupos.map(g => ({ ...g, espacio_id: mapE[g.espacio_id] || g.espacio_id })).filter(g => {
+    if (grupo(g.id)) return true;
+    const igual = state.grupos.find(x => x.espacio_id === g.espacio_id && x.nombre === g.nombre);
+    if (igual) { mapG[g.id] = igual.id; return false; }
+    return true;
+  });
+  const cats = copia.categorias.map(c => ({ ...c, espacio_id: mapE[c.espacio_id] || c.espacio_id,
+      grupo_id: c.grupo_id ? (mapG[c.grupo_id] || c.grupo_id) : null })).filter(c => {
+    if (cat(c.id)) return true;
+    const igual = state.cats.find(x => x.espacio_id === c.espacio_id && x.nombre === c.nombre);
+    if (igual) { mapC[c.id] = igual.id; return false; }
+    return true;
+  });
+  const gas = copia.gastos.map(g => ({ ...g, categoria_id: mapC[g.categoria_id] || g.categoria_id }));
+
+  toast('Restaurando…');
+  try {
+    for (const [tabla, filas] of [['espacios', esp], ['grupos', grs], ['categorias', cats], ['gastos', gas]]) {
+      const listas = filas.map(f => ({ ...f, user_id: uid }));
+      for (let i = 0; i < listas.length; i += 500) {
+        const { error } = await sb.from(tabla).upsert(listas.slice(i, i + 500), { onConflict: 'id' });
+        if (error) throw error;
+      }
+    }
+    await refrescar();
+    toast('Copia restaurada');
+  } catch (e) { toast('No se pudo restaurar: ' + traducirError(e)); }
 };
 
 /* ================= ARRANQUE ================= */
